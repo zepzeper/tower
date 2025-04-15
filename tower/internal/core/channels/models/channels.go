@@ -7,7 +7,7 @@ import (
 )
 
 // Channel represents an API integration channel in the database
-type Channel struct {
+type Channels struct {
 	ID          string          `json:"id"`
 	Name        string          `json:"name"`
 	Type        string          `json:"type"`
@@ -18,7 +18,7 @@ type Channel struct {
 }
 
 // ToAPIChannel converts a database Channel to an API response Channel
-func (c *Channel) ToAPIChannel() interface{} {
+func (c *Channels) ToAPIChannel() interface{} {
 	var config map[string]interface{}
 	json.Unmarshal(c.Config, &config)
 	

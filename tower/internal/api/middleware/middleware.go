@@ -1,9 +1,7 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
-	"time"
 )
 
 // CORS middleware adds Cross-Origin Resource Sharing headers
@@ -20,36 +18,6 @@ func CORS(next http.Handler) http.Handler {
 			return
 		}
 
-		// Call the next handler
-		next.ServeHTTP(w, r)
-	})
-}
-
-// Logger logs HTTP requests
-func Logger(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		
-		// Call the next handler
-		next.ServeHTTP(w, r)
-		
-		// Log the request
-		log.Printf(
-			"%s %s %s %s",
-			r.Method,
-			r.RequestURI,
-			r.RemoteAddr,
-			time.Since(start),
-		)
-	})
-}
-
-// RequestID adds a request ID to the context
-func RequestID(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// In a real implementation, you would generate a unique ID
-		// and add it to the request context
-		
 		// Call the next handler
 		next.ServeHTTP(w, r)
 	})

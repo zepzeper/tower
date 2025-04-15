@@ -10,7 +10,6 @@ import (
 type Config struct {
 	Server   ServerConfig   `json:"server"`
 	Database DatabaseConfig `json:"database"`
-	Auth     AuthConfig     `json:"auth"`
 }
 
 // ServerConfig holds HTTP server configuration
@@ -28,12 +27,6 @@ type DatabaseConfig struct {
 	Password string `json:"password"`
 }
 
-// AuthConfig holds authentication configuration
-type AuthConfig struct {
-	JWTSecret     string `json:"jwt_secret"`
-	TokenDuration int    `json:"token_duration"` // in hours
-}
-
 // Load loads configuration from environment variables or config file
 func Load() (*Config, error) {
 	// Set default configuration
@@ -48,10 +41,6 @@ func Load() (*Config, error) {
 			Name:   "apimiddleware",
 			User:   "postgres",
 			// Password is intentionally left empty for default
-		},
-		Auth: AuthConfig{
-			JWTSecret:     "your-secret-key",
-			TokenDuration: 24,
 		},
 	}
 
@@ -102,17 +91,6 @@ func loadFromEnv(cfg *Config) error {
 	}
 	if password := os.Getenv("DB_PASSWORD"); password != "" {
 		cfg.Database.Password = password
-	}
-
-	// Auth configuration
-	if jwtSecret := os.Getenv("JWT_SECRET"); jwtSecret != "" {
-		cfg.Auth.JWTSecret = jwtSecret
-	}
-	if tokenDuration := os.Getenv("TOKEN_DURATION"); tokenDuration != "" {
-		var d int
-		if _, err := fmt.Sscanf(tokenDuration, "%d", &d); err == nil && d > 0 {
-			cfg.Auth.TokenDuration = d
-		}
 	}
 
 	return nil

@@ -1,18 +1,5 @@
 package models
 
-// Channel represents an API integration
-type Channel struct {
-	ID            string                 `json:"id"`
-	Name          string                 `json:"name"`
-	Type          string                 `json:"type"`
-	Description   string                 `json:"description"`
-	Configuration map[string]interface{} `json:"configuration"`
-	AuthType      string                 `json:"authType"`
-	AuthConfig    map[string]string      `json:"authConfig"`
-	CreatedAt     int64                  `json:"createdAt"`
-	UpdatedAt     int64                  `json:"updatedAt"`
-}
-
 // ChannelType defines the capabilities of a channel type
 type ChannelType struct {
 	ID          string            `json:"id"`
