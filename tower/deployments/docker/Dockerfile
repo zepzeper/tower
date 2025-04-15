@@ -1,6 +1,9 @@
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
+
+# Install Git and build dependencies
+RUN apk add --no-cache git gcc musl-dev
 
 # Copy go.mod and go.sum first for better layer caching
 COPY go.mod go.sum ./

@@ -1,0 +1,28 @@
+FROM golang:1.23-alpine AS builder
+
+# Install build dependencies and Air (using the new import path)
+RUN apk add --no-cache git gcc musl-dev && \
+    go install github.com/air-verse/air@latest
+
+WORKDIR /app
+
+# Copy go.mod and go.sum first for better layer caching
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
+
+# Copy the rest of the source code
+# (This will be volume-mounted in development, but including it in the image is good for inspecting)
+COPY . .
+
+# Set environment
+ENV CGO_ENABLED=0
+ENV GOOS=linux
+
+# Configuration
+ENV AIR_CONFIG_PATH=../../air.toml
+
+# Expose port
+EXPOSE 8080
+
+# Start Air for hot reloading
+CMD ["air", "-c", ".air.toml"]

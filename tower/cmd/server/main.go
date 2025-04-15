@@ -20,7 +20,10 @@ func main() {
 	}
 
 	// Create and configure the server
-	server := api.NewServer(cfg)
+	server, err := api.NewServer(cfg)
+	if err != nil {
+		log.Fatalf("Failed to create server: %v", err)
+	}
 
 	// Start the server in a goroutine
 	go func() {
