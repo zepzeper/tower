@@ -8,8 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/yourusername/tower/internal/api"
-	"github.com/yourusername/tower/internal/config"
+	"github.com/zepzeper/tower/internal/api"
+	"github.com/zepzeper/tower/internal/config"
 )
 
 func main() {

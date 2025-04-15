@@ -4,7 +4,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/yourusername/api-middleware/internal/core/channels/models"
+	"github.com/zepzeper/tower/internal/core/channels/models"
 )
 
 // Registry is a service that manages channel types

@@ -426,4 +426,56 @@ func UpdateTransformer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for i
+	for i, transformer := range transformers {
+		if transformer.ID == id {
+			updated.ID = id
+			transformers[i] = updated
+			respondWithJSON(w, http.StatusOK, Response{
+				Success: true,
+				Data:    updated,
+			})
+			return
+		}
+	}
+
+	respondWithJSON(w, http.StatusNotFound, Response{
+		Success: false,
+		Error:   "Transformer not found",
+	})
+}
+
+// DeleteTransformer deletes a transformer
+func DeleteTransformer(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "transformerID")
+	
+	for i, transformer := range transformers {
+		if transformer.ID == id {
+			// Remove the transformer
+			transformers = append(transformers[:i], transformers[i+1:]...)
+			respondWithJSON(w, http.StatusOK, Response{
+				Success: true,
+				Data:    nil,
+			})
+			return
+		}
+	}
+
+	respondWithJSON(w, http.StatusNotFound, Response{
+		Success: false,
+		Error:   "Transformer not found",
+	})
+}
+
+// Helper function to respond with JSON
+func respondWithJSON(w http.ResponseWriter, status int, payload interface{}) {
+	response, err := json.Marshal(payload)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`{"success":false,"error":"Failed to marshal JSON response"}`))
+		return
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	w.Write(response)
+}

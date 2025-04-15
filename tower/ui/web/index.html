@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower API Middleware</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+        .card {
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .endpoints {
+            margin: 1.5rem 0;
+        }
+        .endpoint {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-left: 3px solid #3498db;
+            background-color: #ecf0f1;
+        }
+        code {
+            background-color: #f1f1f1;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .method {
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        .get {
+            color: #2ecc71;
+        }
+        .post {
+            color: #3498db;
+        }
+        .put {
+            color: #f39c12;
+        }
+        .delete {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tower API Middleware</h1>
+    
+    <div class="card">
+        <h2>Welcome to the API Middleware</h2>
+        <p>This service connects and transforms data between different APIs.</p>
+        <p>The server is up and running. You can interact with it through the available endpoints below.</p>
+    </div>
+    
+    <h2>API Endpoints</h2>
+    
+    <div class="endpoints">
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <code>/health</code>
+            <p>Check the health status of the server.</p>
+        </div>
+        
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <code>/api/v1/channels</code>
+            <p>Get a list of all available channels.</p>
+        </div>
+        
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <code>/api/v1/channels</code>
+            <p>Create a new channel.</p>
+        </div>
+        
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <code>/api/v1/workflows</code>
+            <p>Get a list of all workflows.</p>
+        </div>
+        
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <code>/api/v1/workflows</code>
+            <p>Create a new workflow.</p>
+        </div>
+        
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <code>/api/v1/transformers</code>
+            <p>Get a list of all transformers.</p>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h3>Try it out!</h3>
+        <p>You can use cURL to interact with the API:</p>
+        <pre><code>curl -X GET http://localhost:8080/api/v1/channels</code></pre>
+    </div>
+    
+    <script>
+        // You can add client-side functionality here
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Tower API Middleware UI loaded');
+        });
+    </script>
+</body>
+</html>
