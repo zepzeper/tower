@@ -71,13 +71,20 @@ func (s *Server) setupRoutes() {
 		s.handlers.RegisterRoutes(r)
 	})
 
-// Serve static assets from the dist directory
-fs := http.FileServer(http.Dir("ui/dist"))
-s.router.Handle("/dist/*", http.StripPrefix("/dist", fs))
+    // Serve static files with proper MIME types
+    s.router.Get("/src/css/*", func(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Content-Type", "text/css")
+        http.StripPrefix("/src/css/", http.FileServer(http.Dir("./ui/src/css"))).ServeHTTP(w, r)
+    })
 
-// Serve HTML files
-fileServer := http.FileServer(http.Dir("./ui/src/html"))
-s.router.Handle("/*", fileServer)
+    s.router.Get("/src/js/*", func(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Content-Type", "application/javascript")
+        http.StripPrefix("/src/js/", http.FileServer(http.Dir("./ui/src/js"))).ServeHTTP(w, r)
+    })
+
+    // Serve HTML files
+    fileServer := http.FileServer(http.Dir("./ui/src/html"))
+    s.router.Handle("/*", fileServer)
 }
 
 // Start starts the HTTP server
