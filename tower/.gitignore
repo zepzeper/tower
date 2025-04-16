@@ -14,7 +14,7 @@ tmp/
 *.out
 
 # Dependency directories (remove the comment below to include it)
-.tower/ui/node_modules/
+tower/ui/node_modules/
 
 # Go workspace file
 go.work

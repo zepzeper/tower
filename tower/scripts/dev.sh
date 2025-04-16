@@ -1,36 +1,18 @@
-#!/bin/bash
+#!/bin/sh
+# Start Vite in the background
+npm install -D tailwindcss postcss autoprefixer
+cd /app/ui && npm run tailwind &
+TAILWIND_PID=$!
+# Start Vite in the background
+cd /app/ui && npm run dev &
+VITE_PID=$!
 
-# Colors for output
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+# Start Air in the foreground
+cd /app && air -c .air.toml &
+AIR_PID=$!
 
-# Make script exit when a command fails
-set -e
+# Handle termination
+trap "kill $TAILWIND_PID $VITE_PID $AIR_PID; exit" SIGINT SIGTERM
 
-echo -e "${YELLOW}Setting up development environment...${NC}"
-
-# Verify that .air.toml exists
-if [ ! -f ".air.toml" ]; then
-  echo -e "${RED}Error: .air.toml file not found in the project root.${NC}"
-  exit 1
-fi
-
-# Create tmp directory for air if it doesn't exist
-if [ ! -d "tmp" ]; then
-  echo -e "${YELLOW}Creating tmp directory for Air...${NC}"
-  mkdir -p tmp
-fi
-
-echo -e "${YELLOW}Stopping any existing containers...${NC}"
-docker-compose -f docker-compose.dev.yml down
-
-echo -e "${YELLOW}Building and starting the development environment...${NC}"
-docker-compose -f docker-compose.dev.yml up --build -d
-
-echo -e "${GREEN}Development environment is up and running!${NC}"
-echo -e "${YELLOW}Following logs from API container...${NC}"
-
-# Follow logs
-docker-compose -f docker-compose.dev.yml logs -f api
+# Keep the container running
+wait

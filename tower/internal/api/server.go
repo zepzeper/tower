@@ -71,9 +71,13 @@ func (s *Server) setupRoutes() {
 		s.handlers.RegisterRoutes(r)
 	})
 
-	// Static files (for the UI)
-	fileServer := http.FileServer(http.Dir("./ui/web"))
-	s.router.Handle("/*", http.StripPrefix("/", fileServer))
+// Serve static assets from the dist directory
+fs := http.FileServer(http.Dir("ui/dist"))
+s.router.Handle("/dist/*", http.StripPrefix("/dist", fs))
+
+// Serve HTML files
+fileServer := http.FileServer(http.Dir("./ui/src/html"))
+s.router.Handle("/*", fileServer)
 }
 
 // Start starts the HTTP server

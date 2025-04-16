@@ -17,17 +17,17 @@ func getTestClient() Client {
 	return NewClient(cc)
 }
 
-// func TestGetProducts(t *testing.T) {
-// 	c := getTestClient()
-//
-// 	params := url.Values{}
-//
-// 	_, err := c.Products().List(params)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// }
-//
+func TestGetProducts(t *testing.T) {
+	c := getTestClient()
+
+	params := url.Values{}
+
+	_, err := c.Products().List(params)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestGetOrders(t *testing.T) {
 	c := getTestClient()
 

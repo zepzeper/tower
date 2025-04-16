@@ -1,7 +1,7 @@
 FROM golang:1.23-alpine AS builder
 
 # Install build dependencies and Air (using the new import path)
-RUN apk add --no-cache git gcc musl-dev && \
+RUN apk add --no-cache git gcc musl-dev nodejs npm && \
     go install github.com/air-verse/air@latest
 
 WORKDIR /app
@@ -18,11 +18,8 @@ COPY . .
 ENV CGO_ENABLED=0
 ENV GOOS=linux
 
-# Configuration
-ENV AIR_CONFIG_PATH=../../air.toml
-
 # Expose port
-EXPOSE 8080
+EXPOSE 8080 3000
 
-# Start Air for hot reloading
-CMD ["air", "-c", ".air.toml"]
+# Start both Air and Vite
+CMD ["/app/scripts/dev.sh"]

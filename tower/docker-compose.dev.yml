@@ -5,6 +5,7 @@ services:
       dockerfile: deployments/docker/Dockerfile.dev
     ports:
       - "8080:8080"
+      - "3000:8080"
     environment:
       - ENV=development
       - DB_HOST=db
@@ -35,3 +36,4 @@ services:
 volumes:
   postgres_data:
   go-modules:
+
