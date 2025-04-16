@@ -1,0 +1,65 @@
+{
+    "id_order_unit": 314567828995811,
+    "id_order": "MBXGYR",
+    "ts_created_iso": "2013-12-01T22:37:27Z",
+    "ts_updated_iso": "2013-12-01T22:37:28Z",
+    "is_marketplace_deemed_supplier": false,
+    "status": "need_to_be_sent",
+    "cancel_reason": null,
+    "price": 4615,
+    "id_offer": "286419401",
+    "revenue_gross": 3928,
+    "revenue_net": 3301,
+    "vat": 19,
+    "note": "Your personal note for this unit - it is displayed to the customer on the product page.",
+    "unit_condition": "new",
+    "storefront": "de",
+    "delivery_time_min": 1,
+    "delivery_time_max": 3,
+    "delivery_time_expires_iso": "2013-12-01T22:37:27Z",
+    "shipping_rate": 0,
+    "buyer": {
+        "id_buyer": 24972423,
+        "email": "john.doe@example.de"
+    },
+    "billing_address": {
+        "first_name": "John",
+        "last_name": "Doe",
+        "company_name": "",
+        "street": "Bonnerstraße",
+        "house_number": "73",
+        "postcode": "53117",
+        "city": "Bonn",
+        "additional_field": "1. OG",
+        "phone": "02289001",
+        "country": "DE"
+    },
+    "shipping_address": {
+        "first_name": "John",
+        "last_name": "Doe",
+        "company_name": "",
+        "street": "Bonnerstraße",
+        "house_number": "73",
+        "postcode": "53117",
+        "city": "Bonn",
+        "additional_field": "1. OG",
+        "phone": "02289001",
+        "country": "DE"
+    },
+    "product": {
+        "id_product": 4294967296,
+        "title": "Such an awesome title for an product",
+        "eans": [
+            "4024144772148"
+        ]
+    },
+    "id_category": 45181,
+    "main_picture": "https://media.kaufland.de/images/items/original/a5b07911e5859c2fc6c7a2852d2da33f.jpg",
+    "manufacturer": "DuckProducer",
+    "url": "https://www.kaufland.de/product/58097801/",
+    "real_mgb_article_number": "",
+    "age_rating": 0,
+    "is_valid": true,
+    "dangerous_goods_li_shipping": null,
+    "danger_label_9A": null
+}
