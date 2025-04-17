@@ -5,6 +5,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/zepzeper/tower/internal/api"
@@ -14,10 +15,10 @@ import (
 
 // Server is the central server wrapper that manages both API and WebAPI
 type Server struct {
-	router           *chi.Mux
-	api              *api.Server
-	webapi           *webapi.Server
-	httpServer       *http.Server
+	router            *chi.Mux
+	api               *api.Server
+	webapi            *webapi.Server
+	httpServer        *http.Server
 }
 
 // NewServer creates a new central server with both API and WebAPI
@@ -64,14 +65,28 @@ func (s *Server) setupRoutes() {
 		w.Write([]byte("OK"))
 	})
 
+	// Host-based routing
+	s.router.Get("/*", func(w http.ResponseWriter, r *http.Request) {
+		host := r.Host
+		
+		// Check if this is the portal subdomain
+		if strings.HasPrefix(host, "portal.") {
+			// Serve dashboard application
+			dashboardFileServer := http.FileServer(http.Dir("./portal/dist"))
+			dashboardFileServer.ServeHTTP(w, r)
+			return
+		}
+		
+		// Serve main application
+		frontendFileServer := http.FileServer(http.Dir("./web/dist"))
+		frontendFileServer.ServeHTTP(w, r)
+	})
+
 	// Mount external API
 	s.router.Mount("/api", s.api.Router())
 
 	// Mount internal API for web UI
 	s.router.Mount("/internal", s.webapi.Router())
-
-	fileServer := http.FileServer(http.Dir("./web/dist"))
-	s.router.Handle("/*", fileServer)
 }
 
 // Start starts the HTTP server

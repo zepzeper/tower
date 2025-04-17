@@ -8,12 +8,12 @@ export default defineConfig({
     postcss
   },
   server: {
-    port: 3000, // Main frontend port
+    port: 3001, // portal port
     host: '0.0.0.0', // This allows connections from other hostnames
-    allowedHosts: ['dev.local', 'dashboard.dev.local', 'localhost']
+    allowedHosts: ['dev.local', 'portal.dev.local', 'localhost']
   },
   build: {
-    outDir: '../web/dist',
+    outDir: '../portal/dist',
     emptyOutDir: true,
   },
   publicDir: 'public'
