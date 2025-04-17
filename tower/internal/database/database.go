@@ -1,4 +1,4 @@
-package db
+package database
 
 import (
 	"database/sql"
@@ -8,14 +8,14 @@ import (
 
 	_ "github.com/lib/pq" // PostgreSQL driver
 	"github.com/zepzeper/tower/internal/config"
-	"github.com/zepzeper/tower/internal/database/repositories"
 	"github.com/zepzeper/tower/internal/database/schema"
+  "github.com/zepzeper/tower/internal/database/repositories"
 )
 
 // Manager manages database connections and operations
 type Manager struct {
-	DB         *sql.DB
-	Repos      *repositories.Factory
+	DB    *sql.DB
+	Repos *repositories.Factory
 }
 
 // NewManager creates a new database manager
@@ -34,7 +34,7 @@ func NewManager(cfg *config.Config) (*Manager, error) {
 	var err error
 	maxRetries := 5
 	for i := 0; i < maxRetries; i++ {
-		db, err = sql.Open(cfg.Database.Driver, connStr)
+		db, err = sql.Open("postgres", connStr)
 		if err == nil {
 			// Test the connection
 			err = db.Ping()
@@ -70,7 +70,7 @@ func (m *Manager) Close() error {
 
 // MigrateSchema creates all necessary database tables if they don't exist
 func (m *Manager) MigrateSchema() error {
-	// Apply each schema in the correct order
+  // Apply each schema in the correct order
 	for _, schemaSQL := range schema.AllSchemas() {
 		_, err := m.DB.Exec(schemaSQL)
 		if err != nil {
@@ -80,9 +80,9 @@ func (m *Manager) MigrateSchema() error {
 	
 	log.Println("Database schema initialized successfully")
 	return nil
+
 }
 
-// Transaction executes a function within a database transaction
 func (m *Manager) Transaction(fn func(*sql.Tx) error) error {
 	tx, err := m.DB.Begin()
 	if err != nil {

@@ -8,7 +8,7 @@ import (
 	"github.com/zepzeper/tower/internal/database/models"
 )
 
-// ExecutionRepository handles database operations for workflow executions
+// ExecutionRepository handles database operations for executions
 type ExecutionRepository struct {
 	db *sql.DB
 }
@@ -20,11 +20,11 @@ func NewExecutionRepository(db *sql.DB) *ExecutionRepository {
 	}
 }
 
-// Create inserts a new execution record into the database
+// Create inserts a new execution record
 func (r *ExecutionRepository) Create(execution models.Execution) error {
 	query := `
-		INSERT INTO executions (id, workflow_id, status, start_time, end_time, result, error, created_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		INSERT INTO executions (id, connection_id, status, start_time, end_time, source_data, target_data, error, created_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
 	
 	now := time.Now()
@@ -33,11 +33,12 @@ func (r *ExecutionRepository) Create(execution models.Execution) error {
 	_, err := r.db.Exec(
 		query,
 		execution.ID,
-		execution.WorkflowID,
+		execution.ConnectionID,
 		execution.Status,
 		execution.StartTime,
 		execution.EndTime,
-		execution.Result,
+		execution.SourceData,
+		execution.TargetData,
 		execution.Error,
 		execution.CreatedAt,
 	)
@@ -48,7 +49,7 @@ func (r *ExecutionRepository) Create(execution models.Execution) error {
 // GetByID retrieves an execution by ID
 func (r *ExecutionRepository) GetByID(id string) (models.Execution, error) {
 	query := `
-		SELECT id, workflow_id, status, start_time, end_time, result, error, created_at
+		SELECT id, connection_id, status, start_time, end_time, source_data, target_data, error, created_at
 		FROM executions
 		WHERE id = $1
 	`
@@ -56,11 +57,12 @@ func (r *ExecutionRepository) GetByID(id string) (models.Execution, error) {
 	var execution models.Execution
 	err := r.db.QueryRow(query, id).Scan(
 		&execution.ID,
-		&execution.WorkflowID,
+		&execution.ConnectionID,
 		&execution.Status,
 		&execution.StartTime,
 		&execution.EndTime,
-		&execution.Result,
+		&execution.SourceData,
+		&execution.TargetData,
 		&execution.Error,
 		&execution.CreatedAt,
 	)
@@ -75,17 +77,17 @@ func (r *ExecutionRepository) GetByID(id string) (models.Execution, error) {
 	return execution, nil
 }
 
-// GetByWorkflowID retrieves all executions for a workflow
-func (r *ExecutionRepository) GetByWorkflowID(workflowID string, limit, offset int) ([]models.Execution, error) {
+// GetByConnectionID retrieves executions for a connection
+func (r *ExecutionRepository) GetByConnectionID(connectionID string, limit, offset int) ([]models.Execution, error) {
 	query := `
-		SELECT id, workflow_id, status, start_time, end_time, result, error, created_at
+		SELECT id, connection_id, status, start_time, end_time, source_data, target_data, error, created_at
 		FROM executions
-		WHERE workflow_id = $1
+		WHERE connection_id = $1
 		ORDER BY start_time DESC
 		LIMIT $2 OFFSET $3
 	`
 	
-	rows, err := r.db.Query(query, workflowID, limit, offset)
+	rows, err := r.db.Query(query, connectionID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -96,11 +98,12 @@ func (r *ExecutionRepository) GetByWorkflowID(workflowID string, limit, offset i
 		var execution models.Execution
 		if err := rows.Scan(
 			&execution.ID,
-			&execution.WorkflowID,
+			&execution.ConnectionID,
 			&execution.Status,
 			&execution.StartTime,
 			&execution.EndTime,
-			&execution.Result,
+			&execution.SourceData,
+			&execution.TargetData,
 			&execution.Error,
 			&execution.CreatedAt,
 		); err != nil {
@@ -117,10 +120,10 @@ func (r *ExecutionRepository) GetByWorkflowID(workflowID string, limit, offset i
 }
 
 // UpdateStatus updates the status of an execution
-func (r *ExecutionRepository) UpdateStatus(id, status string, endTime time.Time, resultData []byte, errorMsg string) error {
+func (r *ExecutionRepository) UpdateStatus(id, status string, endTime time.Time, targetData []byte, errorMsg string) error {
 	query := `
 		UPDATE executions
-		SET status = $1, end_time = $2, result = $3, error = $4
+		SET status = $1, end_time = $2, target_data = $3, error = $4
 		WHERE id = $5
 	`
 	
@@ -129,11 +132,11 @@ func (r *ExecutionRepository) UpdateStatus(id, status string, endTime time.Time,
 		sqlError = sql.NullString{String: errorMsg, Valid: true}
 	}
 	
-	dbResult, err := r.db.Exec(
+	result, err := r.db.Exec(
 		query,
 		status,
 		endTime,
-		resultData,
+		targetData,
 		sqlError,
 		id,
 	)
@@ -142,7 +145,7 @@ func (r *ExecutionRepository) UpdateStatus(id, status string, endTime time.Time,
 		return err
 	}
 	
-	rowsAffected, err := dbResult.RowsAffected()
+	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		return err
 	}
@@ -154,10 +157,10 @@ func (r *ExecutionRepository) UpdateStatus(id, status string, endTime time.Time,
 	return nil
 }
 
-// GetRecentExecutions retrieves recent executions across all workflows
+// GetRecentExecutions retrieves recent executions across all connections
 func (r *ExecutionRepository) GetRecentExecutions(limit, offset int) ([]models.Execution, error) {
 	query := `
-		SELECT id, workflow_id, status, start_time, end_time, result, error, created_at
+		SELECT id, connection_id, status, start_time, end_time, source_data, target_data, error, created_at
 		FROM executions
 		ORDER BY start_time DESC
 		LIMIT $1 OFFSET $2
@@ -174,11 +177,12 @@ func (r *ExecutionRepository) GetRecentExecutions(limit, offset int) ([]models.E
 		var execution models.Execution
 		if err := rows.Scan(
 			&execution.ID,
-			&execution.WorkflowID,
+			&execution.ConnectionID,
 			&execution.Status,
 			&execution.StartTime,
 			&execution.EndTime,
-			&execution.Result,
+			&execution.SourceData,
+			&execution.TargetData,
 			&execution.Error,
 			&execution.CreatedAt,
 		); err != nil {
@@ -192,36 +196,4 @@ func (r *ExecutionRepository) GetRecentExecutions(limit, offset int) ([]models.E
 	}
 	
 	return executions, nil
-}
-
-// GetExecutionCounts retrieves counts of executions grouped by status
-func (r *ExecutionRepository) GetExecutionCounts(workflowID string) (map[string]int, error) {
-	query := `
-		SELECT status, COUNT(*) as count
-		FROM executions
-		WHERE workflow_id = $1
-		GROUP BY status
-	`
-	
-	rows, err := r.db.Query(query, workflowID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	
-	counts := make(map[string]int)
-	for rows.Next() {
-		var status string
-		var count int
-		if err := rows.Scan(&status, &count); err != nil {
-			return nil, err
-		}
-		counts[status] = count
-	}
-	
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-	
-	return counts, nil
 }

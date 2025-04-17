@@ -4,78 +4,66 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
-
+	
 	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
+	"github.com/zepzeper/tower/internal/api/dto"
 	"github.com/zepzeper/tower/internal/api/response"
-	"github.com/zepzeper/tower/internal/database"
-	"github.com/zepzeper/tower/internal/database/models"
+	"github.com/zepzeper/tower/internal/core/transformers"
+	"github.com/zepzeper/tower/internal/services"
 )
-
-// transformerRequest represents the data expected in transformer API requests
-type transformerRequest struct {
-	Name        string            `json:"name"`
-	Description string            `json:"description"`
-	Mappings    []json.RawMessage `json:"mappings"`
-	Functions   []json.RawMessage `json:"functions"`
-}
 
 // TransformerHandler handles transformer-related API endpoints
 type TransformerHandler struct {
-	db *db.Manager
+	transformerService *services.TransformerService
 }
 
 // NewTransformerHandler creates a new transformer handler
-func NewTransformerHandler(dbManager *db.Manager) *TransformerHandler {
+func NewTransformerHandler(transformerService *services.TransformerService) *TransformerHandler {
 	return &TransformerHandler{
-		db: dbManager,
+		transformerService: transformerService,
 	}
 }
 
 // ListTransformers handles GET /api/v1/transformers
 func (h *TransformerHandler) ListTransformers(w http.ResponseWriter, r *http.Request) {
-	// Check for name search query
-	nameQuery := r.URL.Query().Get("name")
-	
-	var transformers []models.Transformer
-	var err error
-	
-	if nameQuery != "" {
-		transformers, err = h.db.Repos.Transformer().FindByName(nameQuery)
-	} else {
-		transformers, err = h.db.Repos.Transformer().GetAll()
-	}
-	
+	// Get transformers from service
+	transformers, err := h.transformerService.ListTransformers()
 	if err != nil {
-		response.Error(w, "Failed to retrieve transformers", http.StatusInternalServerError)
+		response.Error(w, "Failed to list transformers: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	
-	// Convert to API response format
-	result := make([]interface{}, len(transformers))
-	for i, transformer := range transformers {
-		result[i] = transformer.ToAPITransformer()
+	// Convert to response format
+	transformerResponses := make([]dto.TransformerResponse, len(transformers))
+	for i, t := range transformers {
+		transformerResponses[i] = transformerToResponse(&t)
 	}
 	
-	response.JSON(w, result, http.StatusOK)
+	response.JSON(w, dto.TransformerListResponse{
+		Transformers: transformerResponses,
+	}, http.StatusOK)
 }
 
 // GetTransformer handles GET /api/v1/transformers/{transformerID}
 func (h *TransformerHandler) GetTransformer(w http.ResponseWriter, r *http.Request) {
 	transformerID := chi.URLParam(r, "transformerID")
 	
-	transformer, err := h.db.Repos.Transformer().GetByID(transformerID)
+	// Get transformer from service
+	transformer, err := h.transformerService.GetTransformer(transformerID)
 	if err != nil {
-		response.Error(w, "Transformer not found", http.StatusNotFound)
+		response.Error(w, "Failed to get transformer: "+err.Error(), http.StatusNotFound)
 		return
 	}
 	
-	response.JSON(w, transformer.ToAPITransformer(), http.StatusOK)
+	// Convert to response format
+	resp := transformerToResponse(transformer)
+	
+	response.JSON(w, resp, http.StatusOK)
 }
 
 // CreateTransformer handles POST /api/v1/transformers
 func (h *TransformerHandler) CreateTransformer(w http.ResponseWriter, r *http.Request) {
-	var req transformerRequest
+	var req dto.TransformerRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
@@ -87,57 +75,40 @@ func (h *TransformerHandler) CreateTransformer(w http.ResponseWriter, r *http.Re
 		return
 	}
 	
-	// Convert mappings and functions to JSON
-	mappingsJSON, err := json.Marshal(req.Mappings)
+	// Convert mappings to service format
+	mappings := make([]transformers.FieldMapping, len(req.Mappings))
+	for i, mapping := range req.Mappings {
+		mappings[i] = transformers.FieldMapping{
+			SourceField: mapping.SourceField,
+			TargetField: mapping.TargetField,
+		}
+	}
+	
+	// Create transformer
+	id, err := h.transformerService.CreateTransformer(req.Name, req.Description, mappings)
 	if err != nil {
-		response.Error(w, "Invalid mappings format", http.StatusBadRequest)
+		response.Error(w, "Failed to create transformer: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	
-	functionsJSON, err := json.Marshal(req.Functions)
+	// Get created transformer
+	transformer, err := h.transformerService.GetTransformer(id)
 	if err != nil {
-		response.Error(w, "Invalid functions format", http.StatusBadRequest)
+		response.Error(w, "Transformer created but failed to retrieve: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	
-	// Create transformer model
-	transformer := models.Transformer{
-		ID:        uuid.New().String(),
-		Name:      req.Name,
-		Mappings:  mappingsJSON,
-		Functions: functionsJSON,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
+	// Convert to response format
+	resp := transformerToResponse(transformer)
 	
-	// Set description if provided
-	if req.Description != "" {
-		transformer.Description.String = req.Description
-		transformer.Description.Valid = true
-	}
-	
-	// Save to database
-	if err := h.db.Repos.Transformer().Create(transformer); err != nil {
-		response.Error(w, "Failed to create transformer", http.StatusInternalServerError)
-		return
-	}
-	
-	response.JSON(w, transformer.ToAPITransformer(), http.StatusCreated)
+	response.JSON(w, resp, http.StatusCreated)
 }
 
 // UpdateTransformer handles PUT /api/v1/transformers/{transformerID}
 func (h *TransformerHandler) UpdateTransformer(w http.ResponseWriter, r *http.Request) {
 	transformerID := chi.URLParam(r, "transformerID")
 	
-	// Check if transformer exists
-	transformer, err := h.db.Repos.Transformer().GetByID(transformerID)
-	if err != nil {
-		response.Error(w, "Transformer not found", http.StatusNotFound)
-		return
-	}
-	
-	// Parse request body
-	var req transformerRequest
+	var req dto.TransformerRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
@@ -149,93 +120,131 @@ func (h *TransformerHandler) UpdateTransformer(w http.ResponseWriter, r *http.Re
 		return
 	}
 	
-	// Convert mappings and functions to JSON
-	if len(req.Mappings) > 0 {
-		mappingsJSON, err := json.Marshal(req.Mappings)
-		if err != nil {
-			response.Error(w, "Invalid mappings format", http.StatusBadRequest)
-			return
+	// Convert mappings to service format
+	mappings := make([]transformers.FieldMapping, len(req.Mappings))
+	for i, mapping := range req.Mappings {
+		mappings[i] = transformers.FieldMapping{
+			SourceField: mapping.SourceField,
+			TargetField: mapping.TargetField,
 		}
-		transformer.Mappings = mappingsJSON
 	}
 	
-	if len(req.Functions) > 0 {
-		functionsJSON, err := json.Marshal(req.Functions)
-		if err != nil {
-			response.Error(w, "Invalid functions format", http.StatusBadRequest)
-			return
-		}
-		transformer.Functions = functionsJSON
-	}
-	
-	// Update transformer fields
-	transformer.Name = req.Name
-	transformer.UpdatedAt = time.Now()
-	
-	// Update description if provided
-	if req.Description != "" {
-		transformer.Description.String = req.Description
-		transformer.Description.Valid = true
-	} else {
-		transformer.Description.Valid = false
-	}
-	
-	// Save to database
-	if err := h.db.Repos.Transformer().Update(transformer); err != nil {
-		response.Error(w, "Failed to update transformer", http.StatusInternalServerError)
+	// Update transformer
+	err := h.transformerService.UpdateTransformer(transformerID, req.Name, req.Description, mappings)
+	if err != nil {
+		response.Error(w, "Failed to update transformer: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	
-	response.JSON(w, transformer.ToAPITransformer(), http.StatusOK)
+	// Get updated transformer
+	transformer, err := h.transformerService.GetTransformer(transformerID)
+	if err != nil {
+		response.Error(w, "Transformer updated but failed to retrieve: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	
+	// Convert to response format
+	resp := transformerToResponse(transformer)
+	
+	response.JSON(w, resp, http.StatusOK)
 }
 
 // DeleteTransformer handles DELETE /api/v1/transformers/{transformerID}
 func (h *TransformerHandler) DeleteTransformer(w http.ResponseWriter, r *http.Request) {
 	transformerID := chi.URLParam(r, "transformerID")
 	
-	// Delete from database
-	if err := h.db.Repos.Transformer().Delete(transformerID); err != nil {
-		response.Error(w, "Failed to delete transformer", http.StatusInternalServerError)
+	// Delete transformer
+	err := h.transformerService.DeleteTransformer(transformerID)
+	if err != nil {
+		response.Error(w, "Failed to delete transformer: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	
-	response.JSON(w, map[string]interface{}{
-		"success": true,
+	response.JSON(w, map[string]string{
 		"message": "Transformer deleted successfully",
 	}, http.StatusOK)
 }
 
-// TestTransformer handles POST /api/v1/transformers/{transformerID}/test
-func (h *TransformerHandler) TestTransformer(w http.ResponseWriter, r *http.Request) {
-	transformerID := chi.URLParam(r, "transformerID")
+// GenerateTransformer handles POST /api/v1/transformers/generate
+func (h *TransformerHandler) GenerateTransformer(w http.ResponseWriter, r *http.Request) {
+	var req dto.GenerateTransformerRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
 	
-	// Get transformer
-	transformer, err := h.db.Repos.Transformer().GetByID(transformerID)
+	// Validate request
+	if req.SourceID == "" || req.TargetID == "" {
+		response.Error(w, "Source and target IDs are required", http.StatusBadRequest)
+		return
+	}
+	
+	// Generate transformer
+	id, err := h.transformerService.GenerateTransformer(req.SourceID, req.TargetID, req.Name, req.Description)
 	if err != nil {
-		response.Error(w, "Transformer not found", http.StatusNotFound)
+		response.Error(w, "Failed to generate transformer: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	
-	// Parse input data from request
-	var inputData map[string]interface{}
-	if err := json.NewDecoder(r.Body).Decode(&inputData); err != nil {
-		response.Error(w, "Invalid input data", http.StatusBadRequest)
+	// Get created transformer
+	transformer, err := h.transformerService.GetTransformer(id)
+	if err != nil {
+		response.Error(w, "Transformer generated but failed to retrieve: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	
-	// In a real implementation, you would:
-	// 1. Apply the transformer mappings to the input data
-	// 2. Apply the transformer functions to the intermediate data
-	// 3. Return the transformed data
+	// Convert to response format
+	resp := transformerToResponse(transformer)
 	
-	// For now, just return example output
-	response.JSON(w, map[string]interface{}{
-		"success": true,
-		"input":   inputData,
-		"output": map[string]interface{}{
-			"transformedData": "This is a placeholder for the transformed data",
-			"transformerId":   transformer.ID,
-			"timestamp":       time.Now(),
-		},
+	response.JSON(w, resp, http.StatusCreated)
+}
+
+// TransformData handles POST /api/v1/transformers/transform
+func (h *TransformerHandler) TransformData(w http.ResponseWriter, r *http.Request) {
+	var req dto.TransformDataRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	
+	// Transform data
+	result, err := h.transformerService.TransformData(r.Context(), req.TransformerID, req.Data)
+	if err != nil {
+		response.Error(w, "Failed to transform data: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	
+	response.JSON(w, dto.TransformDataResponse{
+		Result: result,
 	}, http.StatusOK)
+}
+
+// Helper function to convert transformer to response
+func transformerToResponse(transformer *transformers.Transformer) dto.TransformerResponse {
+	mappings := make([]dto.FieldMapping, len(transformer.Mappings))
+	for i, mapping := range transformer.Mappings {
+		mappings[i] = dto.FieldMapping{
+			SourceField: mapping.SourceField,
+			TargetField: mapping.TargetField,
+		}
+	}
+	
+	functions := make([]dto.Function, len(transformer.Functions))
+	for i, fn := range transformer.Functions {
+		functions[i] = dto.Function{
+			Name:        fn.Name,
+			TargetField: fn.TargetField,
+			Args:        fn.Args,
+		}
+	}
+	
+	return dto.TransformerResponse{
+		ID:          transformer.ID,
+		Name:        transformer.Name,
+		Description: transformer.Description,
+		Mappings:    mappings,
+		Functions:   functions,
+		CreatedAt:   transformer.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:   transformer.UpdatedAt.Format(time.RFC3339),
+	}
 }

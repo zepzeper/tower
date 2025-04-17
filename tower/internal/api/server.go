@@ -7,54 +7,53 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/zepzeper/tower/internal/api/handlers"
-	towermiddleware "github.com/zepzeper/tower/internal/api/middleware"
-	"github.com/zepzeper/tower/internal/config"
-	"github.com/zepzeper/tower/internal/database"
+	"github.com/zepzeper/tower/internal/api/middleware"
+	"github.com/zepzeper/tower/internal/services"
 )
 
 // Server represents the HTTP server
 type Server struct {
-	server  *http.Server
-	router  *chi.Mux
-	config  *config.Config
-	db      *db.Manager
-	handlers *handlers.Registry
+	server           *http.Server
+	router           *chi.Mux
+	handlers         *handlers.Registry
+	connectorService *services.ConnectorService
+	transformerService *services.TransformerService
+	connectionService *services.ConnectionService
 }
 
-// NewServer creates a new HTTP server
-func NewServer(cfg *config.Config) (*Server, error) {
+// NewServer creates a new server with the given services
+func NewServer(
+	connectorService *services.ConnectorService,
+	transformerService *services.TransformerService,
+	connectionService *services.ConnectionService,
+) *Server {
 	r := chi.NewRouter()
 
-	// Middleware
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(60 * time.Second))
-	r.Use(towermiddleware.CORS)
-
-	// Connect to database
-	dbManager, err := db.NewManager(cfg)
-	if err != nil {
-		return nil, err
-	}
+	// Add middleware
+	r.Use(middleware.Recover)
+	r.Use(middleware.Logging)
+	r.Use(middleware.CORS)
 
 	// Create server
-	s := &Server{
-		router: r,
-		config: cfg,
-		db:     dbManager,
+	server := &Server{
+		router:            r,
+		connectorService:  connectorService,
+		transformerService: transformerService,
+		connectionService: connectionService,
 	}
 
 	// Create handler registry
-	s.handlers = handlers.NewRegistry(dbManager)
+	server.handlers = handlers.NewRegistry(
+		connectorService,
+		transformerService,
+		connectionService,
+	)
 
 	// Setup routes
-	s.setupRoutes()
+	server.setupRoutes()
 
-	return s, nil
+	return server
 }
 
 // setupRoutes configures the API routes
@@ -71,29 +70,18 @@ func (s *Server) setupRoutes() {
 		s.handlers.RegisterRoutes(r)
 	})
 
-    // Serve static files with proper MIME types
-    s.router.Get("/src/css/*", func(w http.ResponseWriter, r *http.Request) {
-        w.Header().Set("Content-Type", "text/css")
-        http.StripPrefix("/src/css/", http.FileServer(http.Dir("./ui/src/css"))).ServeHTTP(w, r)
-    })
-
-    s.router.Get("/src/js/*", func(w http.ResponseWriter, r *http.Request) {
-        w.Header().Set("Content-Type", "application/javascript")
-        http.StripPrefix("/src/js/", http.FileServer(http.Dir("./ui/src/js"))).ServeHTTP(w, r)
-    })
-
-    // Serve HTML files
-    fileServer := http.FileServer(http.Dir("./ui/src/html"))
-    s.router.Handle("/*", fileServer)
+	// Serve static files for web UI
+	fileServer := http.FileServer(http.Dir("./web/dist"))
+	s.router.Handle("/web/*", http.StripPrefix("/web", fileServer))
+	
+	// Redirect root to web UI
+	s.router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/web", http.StatusSeeOther)
+	})
 }
 
 // Start starts the HTTP server
 func (s *Server) Start(addr string) error {
-	// Initialize database schema
-	if err := s.db.MigrateSchema(); err != nil {
-		return err
-	}
-
 	s.server = &http.Server{
 		Addr:         addr,
 		Handler:      s.router,
@@ -101,24 +89,12 @@ func (s *Server) Start(addr string) error {
 		WriteTimeout: 15 * time.Second,
 	}
 
-	log.Printf("Server starting on %s", addr)
+	log.Printf("Starting server on %s", addr)
 	return s.server.ListenAndServe()
 }
 
 // Shutdown gracefully shuts down the server
-func (s *Server) Shutdown() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	// Close database connection
-	if s.db != nil {
-		s.db.Close()
-	}
-
+func (s *Server) Shutdown(ctx context.Context) error {
 	return s.server.Shutdown(ctx)
 }
 
-// DB returns the database manager
-func (s *Server) DB() *db.Manager {
-	return s.db
-}

@@ -16,22 +16,3 @@ type Transformer struct {
 	CreatedAt   time.Time       `json:"createdAt"`
 	UpdatedAt   time.Time       `json:"updatedAt"`
 }
-
-// ToAPITransformer converts a database Transformer to an API response Transformer
-func (t *Transformer) ToAPITransformer() interface{} {
-	var mappings []interface{}
-	var functions []interface{}
-	
-	json.Unmarshal(t.Mappings, &mappings)
-	json.Unmarshal(t.Functions, &functions)
-	
-	return map[string]interface{}{
-		"id":          t.ID,
-		"name":        t.Name,
-		"description": t.Description.String,
-		"mappings":    mappings,
-		"functions":   functions,
-		"createdAt":   t.CreatedAt,
-		"updatedAt":   t.UpdatedAt,
-	}
-}

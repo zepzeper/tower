@@ -1,138 +1,77 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 // Config holds all configuration for the application
 type Config struct {
-	Server   ServerConfig   `json:"server"`
-	Database DatabaseConfig `json:"database"`
+	Server   ServerConfig
+	Database DatabaseConfig
 }
 
-// ServerConfig holds HTTP server configuration
+// ServerConfig holds server configuration
 type ServerConfig struct {
-	Port int `json:"port"`
+	Port    int
+	BaseURL string
 }
 
 // DatabaseConfig holds database configuration
 type DatabaseConfig struct {
-	Driver   string `json:"driver"`
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	Name     string `json:"name"`
-	User     string `json:"user"`
-	Password string `json:"password"`
+	Host     string
+	Port     int
+	Name     string
+	User     string
+	Password string
 }
 
-// Load loads configuration from environment variables or config file
+// Load loads configuration from environment variables
 func Load() (*Config, error) {
-	// Set default configuration
 	config := &Config{
 		Server: ServerConfig{
-			Port: 8080,
+			Port:    getEnvInt("SERVER_PORT", 8080),
+			BaseURL: getEnv("SERVER_BASE_URL", "http://localhost:8080"),
 		},
 		Database: DatabaseConfig{
-			Driver: "postgres",
-			Host:   "localhost",
-			Port:   5432,
-			Name:   "apimiddleware",
-			User:   "postgres",
-			// Password is intentionally left empty for default
+			Host:     getEnv("DB_HOST", "localhost"),
+			Port:     getEnvInt("DB_PORT", 5432),
+			Name:     getEnv("DB_NAME", "tower"),
+			User:     getEnv("DB_USER", "postgres"),
+			Password: getEnv("DB_PASSWORD", "postgres"),
 		},
-	}
-
-	// Override with environment variables
-	if err := loadFromEnv(config); err != nil {
-		return nil, err
-	}
-
-	// If config file exists, override with it
-	configFile := getConfigFile()
-	if configFile != "" {
-		if err := loadFromFile(config, configFile); err != nil {
-			return nil, err
-		}
 	}
 
 	return config, nil
 }
 
-// loadFromEnv loads configuration from environment variables
-func loadFromEnv(cfg *Config) error {
-	// Server configuration
-	if port := os.Getenv("SERVER_PORT"); port != "" {
-		var p int
-		if _, err := fmt.Sscanf(port, "%d", &p); err == nil && p > 0 {
-			cfg.Server.Port = p
-		}
+// getEnv gets an environment variable or returns a default value
+func getEnv(key, defaultValue string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
 	}
-
-	// Database configuration
-	if driver := os.Getenv("DB_DRIVER"); driver != "" {
-		cfg.Database.Driver = driver
-	}
-	if host := os.Getenv("DB_HOST"); host != "" {
-		cfg.Database.Host = host
-	}
-	if port := os.Getenv("DB_PORT"); port != "" {
-		var p int
-		if _, err := fmt.Sscanf(port, "%d", &p); err == nil && p > 0 {
-			cfg.Database.Port = p
-		}
-	}
-	if name := os.Getenv("DB_NAME"); name != "" {
-		cfg.Database.Name = name
-	}
-	if user := os.Getenv("DB_USER"); user != "" {
-		cfg.Database.User = user
-	}
-	if password := os.Getenv("DB_PASSWORD"); password != "" {
-		cfg.Database.Password = password
-	}
-
-	return nil
+	return defaultValue
 }
 
-// loadFromFile loads configuration from a JSON file
-func loadFromFile(cfg *Config, file string) error {
-	f, err := os.Open(file)
-	if err != nil {
-		return fmt.Errorf("failed to open config file: %v", err)
+// getEnvInt gets an environment variable as an integer or returns a default value
+func getEnvInt(key string, defaultValue int) int {
+	valueStr := os.Getenv(key)
+	if valueStr == "" {
+		return defaultValue
 	}
-	defer f.Close()
-
-	decoder := json.NewDecoder(f)
-	if err := decoder.Decode(cfg); err != nil {
-		return fmt.Errorf("failed to decode config file: %v", err)
+	
+	if value, err := strconv.Atoi(valueStr); err == nil {
+		return value
 	}
-
-	return nil
+	
+	return defaultValue
 }
 
-// getConfigFile returns the path to the config file, if it exists
-func getConfigFile() string {
-	// Check for config file path in environment
-	if configFile := os.Getenv("CONFIG_FILE"); configFile != "" {
-		if _, err := os.Stat(configFile); err == nil {
-			return configFile
-		}
-	}
-
-	// Check for default config file locations
-	locations := []string{
-		"./config.json",
-		"./configs/config.json",
-		"/etc/api-middleware/config.json",
-	}
-
-	for _, loc := range locations {
-		if _, err := os.Stat(loc); err == nil {
-			return loc
-		}
-	}
-
-	return ""
+// GetDSN returns the database connection string
+func (c *DatabaseConfig) GetDSN() string {
+	return fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		c.Host, c.Port, c.User, c.Password, c.Name,
+	)
 }

@@ -20,7 +20,7 @@ func NewTransformerRepository(db *sql.DB) *TransformerRepository {
 	}
 }
 
-// GetAll retrieves all transformers from the database
+// GetAll retrieves all transformers
 func (r *TransformerRepository) GetAll() ([]models.Transformer, error) {
 	query := `
 		SELECT id, name, description, mappings, functions, created_at, updated_at
@@ -87,7 +87,7 @@ func (r *TransformerRepository) GetByID(id string) (models.Transformer, error) {
 	return transformer, nil
 }
 
-// Create inserts a new transformer into the database
+// Create inserts a new transformer
 func (r *TransformerRepository) Create(transformer models.Transformer) error {
 	query := `
 		INSERT INTO transformers (id, name, description, mappings, functions, created_at, updated_at)
@@ -148,7 +148,7 @@ func (r *TransformerRepository) Update(transformer models.Transformer) error {
 	return nil
 }
 
-// Delete removes a transformer from the database
+// Delete removes a transformer
 func (r *TransformerRepository) Delete(id string) error {
 	query := `DELETE FROM transformers WHERE id = $1`
 	
@@ -167,43 +167,4 @@ func (r *TransformerRepository) Delete(id string) error {
 	}
 	
 	return nil
-}
-
-// FindByName searches for transformers by name (partial match)
-func (r *TransformerRepository) FindByName(namePattern string) ([]models.Transformer, error) {
-	query := `
-		SELECT id, name, description, mappings, functions, created_at, updated_at
-		FROM transformers
-		WHERE name ILIKE $1
-		ORDER BY name ASC
-	`
-	
-	rows, err := r.db.Query(query, "%"+namePattern+"%")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	
-	var transformers []models.Transformer
-	for rows.Next() {
-		var transformer models.Transformer
-		if err := rows.Scan(
-			&transformer.ID,
-			&transformer.Name,
-			&transformer.Description,
-			&transformer.Mappings,
-			&transformer.Functions,
-			&transformer.CreatedAt,
-			&transformer.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		transformers = append(transformers, transformer)
-	}
-	
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-	
-	return transformers, nil
 }

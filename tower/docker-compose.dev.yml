@@ -1,26 +1,4 @@
 services:
-  api:
-    build:
-      context: .
-      dockerfile: deployments/docker/Dockerfile.dev
-    ports:
-      - "8080:8080"
-      - "3000:3000"
-    environment:
-      - ENV=development
-      - DB_HOST=db
-      - DB_PORT=5432
-      - DB_NAME=tower
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-    depends_on:
-      - db
-    volumes:
-      - .:/app  # Mount the entire project for hot reloading (includes .air.toml)
-      - go-modules:/go/pkg/mod  # Cache Go modules
-      - ./tmp:/app/tmp  # Explicitly mount the tmp directory for Air artifacts
-    restart: unless-stopped
-
   db:
     image: postgres:15-alpine
     environment:
@@ -35,5 +13,3 @@ services:
 
 volumes:
   postgres_data:
-  go-modules:
-
