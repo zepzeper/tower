@@ -1,0 +1,19 @@
+{
+  "header": {
+    "product": "Product",
+    "integrations": "Koppelingen",
+    "pricing": "Prijzen",
+    "signin": "Inloggen",
+    "signup": "Registreren",
+    "language": "Taal",
+    "productDropdown": {
+      "features": "Functies",
+      "solutions": "Oplossingen",
+      "useCases": "Toepassingen",
+      "documentation": "Documentatie"
+    }
+  },
+  "footer": {
+    "copyright": "© 2025 TowerAPI. Alle rechten voorbehouden."
+  }
+}

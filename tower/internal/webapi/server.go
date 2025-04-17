@@ -1,13 +1,13 @@
-package api
+package webapi
 
 import (
 	"github.com/go-chi/chi/v5"
-	"github.com/zepzeper/tower/internal/api/handlers"
 	"github.com/zepzeper/tower/internal/api/middleware"
 	"github.com/zepzeper/tower/internal/services"
+	"github.com/zepzeper/tower/internal/webapi/handlers"
 )
 
-// Server represents the external API server
+// Server represents the internal API server for the web UI
 type Server struct {
 	router            *chi.Mux
 	handlers          *handlers.Registry
@@ -16,7 +16,7 @@ type Server struct {
 	connectionService *services.ConnectionService
 }
 
-// NewServer creates a new API server
+// NewServer creates a new WebAPI server
 func NewServer(
 	connectorService *services.ConnectorService,
 	transformerService *services.TransformerService,
@@ -24,7 +24,7 @@ func NewServer(
 ) *Server {
 	r := chi.NewRouter()
 
-	// Add middleware
+	// Use the same middleware as the external API
 	r.Use(middleware.Recover)
 	r.Use(middleware.Logging)
 	r.Use(middleware.CORS)
@@ -50,9 +50,9 @@ func NewServer(
 	return server
 }
 
-// setupRoutes configures the API routes
+// setupRoutes configures the routes
 func (s *Server) setupRoutes() {
-	// Register all API routes through the handler registry
+	// Register all internal API routes through the handler registry
 	s.handlers.RegisterRoutes(s.router)
 }
 

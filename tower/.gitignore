@@ -14,7 +14,9 @@ tmp/
 *.out
 
 # Dependency directories (remove the comment below to include it)
-tower/ui/node_modules/
+frontend/node_modules/
+frontend/package-lock.json
+web/*
 
 # Go workspace file
 go.work

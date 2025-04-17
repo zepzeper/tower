@@ -1,0 +1,111 @@
+{
+    "homepage": {
+        "hero": {
+            "titleStart": "Volledig beheer van jouw",
+            "titleHighlight": "API-koppelingen",
+            "titleEnd": "in één platform.",
+            "subtitle": "Analyseer, optimaliseer, groei en breid je mogelijkheden uit met TowerAPI's intuïtieve en krachtige tools.",
+            "primaryCta": "Start nu gratis",
+            "secondaryCta": "Log in"
+        },
+        "logos": {
+            "title": "Meer dan 4000 bedrijven gingen jou al voor"
+        },
+        "caseStudy": {
+            "preTitle": "Hoe Bedrijf A TowerAPI gebruikt voor omzetgroei en automatisering",
+            "linkText": "Lees onze case study"
+        },
+        "features": {
+            "title": "Alle functionaliteiten die je nodig hebt voor groei",
+            "subtitle": "Van inzichtelijke analyses tot effectieve integratie, TowerAPI is je alles-in-één oplossing voor succes."
+        },
+        "cta": {
+            "title": "Klaar om te beginnen?",
+            "subtitle": "Laat jouw bedrijf vandaag al groeien door middel van krachtige API-koppelingen.",
+            "buttonText": "Start nu gratis"
+        },
+        "features": {
+            "title": "Alle functionaliteiten die je nodig hebt voor API-koppelingen",
+            "subtitle": "Van inzichtelijke analyses tot effectieve integraties, TowerAPI is je alles-in-één oplossing voor succes.",
+            "tabs": {
+                "api": {
+                    "title": "API koppelingen",
+                    "description": "Verbind verschillende systemen naadloos met elkaar via onze geavanceerde API-integraties.",
+                    "imageAlt": "Dashboard voor API-koppelingen"
+                },
+                "dashboard": {
+                    "title": "Dashboard",
+                    "description": "Krijg direct inzicht in al je verbindingen en hun status via ons overzichtelijke dashboard.",
+                    "imageAlt": "Overzichtelijk dashboard met connectie-statistieken"
+                },
+                "automation": {
+                    "title": "Automatisering",
+                    "description": "Automatiseer dataverzending tussen systemen en elimineer handmatige taken.",
+                    "imageAlt": "Interface voor werkstroomautomatisering"
+                },
+                "analytics": {
+                    "title": "Analytics",
+                    "description": "Analyseer je datastromen en verkrijg waardevolle inzichten voor betere besluitvorming.",
+                    "imageAlt": "Analyse-dashboard met grafieken en statistieken"
+                }
+            }
+        },
+        "secondaryFeatures": {
+            "title": "Vereenvoudig en versnel je bedrijfsvoering",
+            "subtitle": "Met TowerAPI bespaar je tijd, vereenvoudig je werkzaamheden en zet je data om in doeltreffende acties.",
+            "tabs": {
+                "email": {
+                    "title": "Automatiseer communicatie",
+                    "headline": "E-mailintegratie voor betere klantenservice",
+                    "description": "Koppel je e-mailsysteem aan andere applicaties om automatisch berichten te versturen op basis van triggers in je systemen.",
+                    "imageAlt": "E-mailintegratie interface"
+                },
+                "sync": {
+                    "title": "Synchronisatie",
+                    "headline": "Automatische datasynchronisatie",
+                    "description": "Houd je gegevens consistent tussen verschillende systemen met bidirectionele synchronisatie in real-time.",
+                    "imageAlt": "Data synchronisatie dashboard"
+                },
+                "data": {
+                    "title": "Dataverzameling",
+                    "headline": "Alle relevante data direct beschikbaar",
+                    "description": "Verzamel data van al je systemen op één plek voor betere analyses en besluitvorming. Stop met handmatige tracking en benut kansen sneller.",
+                    "imageAlt": "Data-integratie dashboard"
+                }
+            }
+        },
+        "caseStudies": {
+            "title": "Case studies",
+            "subtitle": "Leer hoe andere bedrijven TowerAPI inzetten voor groei en procesoptimalisatie.",
+            "items": {
+                "companyA": {
+                    "title": "Hoe Bedrijf A TowerAPI gebruikt voor omzetgroei en automatisering",
+                    "description": "In deze case study leggen we uit hoe Bedrijf A TowerAPI inzet voor het optimaliseren van hun bedrijfsprocessen en het verhogen van hun omzet."
+                },
+                "companyB": {
+                    "title": "Hoe Bedrijf B tijd bespaart met geautomatiseerde workflows",
+                    "description": "In deze case study laten we zien hoe Bedrijf B hun workflows heeft geautomatiseerd en daarmee wekelijks meer dan 20 uur aan handmatig werk bespaart."
+                },
+                "companyC": {
+                    "title": "Hoe Bedrijf C real-time data gebruikt voor besluitvorming",
+                    "description": "In deze case study leggen we uit hoe Bedrijf C TowerAPI gebruikt om real-time inzicht te krijgen in hun bedrijfsvoering en sneller betere beslissingen te nemen."
+                }
+            }
+        }
+    },
+    "integrations": {
+        "title": "Koppelingen",
+        "subtitle": "Verbind TowerAPI met jouw favoriete tools en diensten",
+        "searchPlaceholder": "🔍 Zoek koppelingen...",
+        "noResults": "Geen resultaten gevonden",
+        "tryDifferentSearch": "Probeer een andere zoekterm of categorie",
+        "connectButton": "Verbind",
+        "categories": {
+            "allCategories": "Alle categorien",
+            "ecommerce": "E-commerce",
+            "crm": "CRM",
+            "finance": "Financiën",
+            "marketing": "Marketing"
+        }
+    }
+}

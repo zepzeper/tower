@@ -1,0 +1,12 @@
+{
+  "header": {
+    "home": "Home",
+    "integrations": "Integrations",
+    "pricing": "Pricing",
+    "product": "Product",
+    "cta": "Get Started"
+  },
+  "footer": {
+    "copyright": "© 2025 TowerAPI. All rights reserved."
+  }
+}

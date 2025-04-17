@@ -1,18 +1,20 @@
+// cmd/server/main.go
 package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/zepzeper/tower/internal/api"
 	"github.com/zepzeper/tower/internal/config"
 	"github.com/zepzeper/tower/internal/connectors/woocommerce"
 	"github.com/zepzeper/tower/internal/core/registry"
 	"github.com/zepzeper/tower/internal/database"
+	"github.com/zepzeper/tower/internal/server"
 	"github.com/zepzeper/tower/internal/services"
 )
 
@@ -47,8 +49,12 @@ func main() {
 	jobManager := services.NewJobManager(dbManager, connectorService, transformerService)
 	connectionService := services.NewConnectionService(dbManager, connectorService, transformerService, jobManager)
 
-	// Create server
-	server := api.NewServer(connectorService, transformerService, connectionService)
+	// Create central server
+	server := server.NewServer(
+		connectorService,
+		transformerService,
+		connectionService,
+	)
 
 	// Initialize job manager with existing connections
 	if err := jobManager.InitializeFromDatabase(context.Background()); err != nil {
@@ -57,8 +63,8 @@ func main() {
 
 	// Start server in a goroutine
 	go func() {
-		//addr := cfg.Server.BaseURL
-		if err := server.Start(":8080"); err != nil {
+		addr := fmt.Sprintf(":%d", cfg.Server.Port)
+		if err := server.Start(addr); err != nil {
 			log.Fatalf("Failed to start server: %v", err)
 		}
 	}()

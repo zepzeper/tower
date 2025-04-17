@@ -1,0 +1,18 @@
+{
+  "integrations": {
+    "title": "Integrations",
+    "search": "Search integrations...",
+    "all": "All categories",
+    "ecommerce": "E-commerce",
+    "crm": "CRM",
+    "finance": "Finance",
+    "marketing": "Marketing",
+    "description": "Connect TowerAPI with your favorite tools and services",
+
+    "allCategories": "All Categories",
+    "ecommerce": "ecommerce",
+    "crm": "crm",
+    "finance": "finance",
+    "marketing": "marketing",
+  }
+}
