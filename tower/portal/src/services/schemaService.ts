@@ -56,30 +56,33 @@ class SchemaService {
     }
   }
 
-  /**
-   * Gets schemas for a connection between two systems
-   * @param sourceType - The source system type
-   * @param targetType - The target system type
-   * @returns Object containing both schemas
-   */
-  async getConnectionSchemas(sourceType: string, targetType: string): Promise<ConnectionSchemas> {
-    try {
-      const [sourceSchema, targetSchema] = await Promise.all([
-        this.getSchema(sourceType),
-        this.getSchema(targetType)
-      ]);
-      
-      return {
-        sourceSchema,
-        targetSchema,
-        sourceType,
-        targetType
-      };
-    } catch (error) {
-      console.error('Error fetching connection schemas:', error);
-      throw error;
+    /**
+     * Fetches source/target fields and suggested mappings from the backend
+     */
+    async getConnectionSchemas(sourceType: string, targetType: string): Promise<{
+        sourceFields: any[];
+        targetFields: any[];
+        mappings: MappingDefinition[];
+    }> {
+        try {
+            const response = await fetch(`http://localhost:8080/api/mappings/schema?source=${sourceType}&target=${targetType}`);
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch backend schema mapping: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            return {
+                sourceFields: data.sourceFields,
+                targetFields: data.targetFields,
+                mappings: data.mappings,
+            };
+        } catch (error) {
+            console.error('Error fetching backend schema mapping:', error);
+            throw error;
+        }
     }
-  }
 
   /**
    * Simulates a fetch to the server

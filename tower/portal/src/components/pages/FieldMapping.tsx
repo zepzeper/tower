@@ -74,10 +74,8 @@ const FieldMapping: React.FC = () => {
                 const sourceType = savedMapping?.sourceType ?? 'woocommerce';
                 const targetType = savedMapping?.targetType ?? 'brincr';
 
-                const { sourceSchema, targetSchema } = await schemaService.getConnectionSchemas(sourceType, targetType);
-
-                // Use schemaTransformer to flatten and prepare fields
-                const { sourceFields, targetFields } = schemaTransformer.generateMappingData(sourceSchema, targetSchema);
+                const { sourceFields, targetFields, mappings: suggestedMappings } =
+                    await schemaService.getConnectionSchemas(sourceType, targetType);
 
                 setSourceFields(sourceFields);
                 setTargetFields(targetFields);

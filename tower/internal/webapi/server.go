@@ -11,18 +11,13 @@ import (
 type Server struct {
 	router            *chi.Mux
 	handlers          *handlers.Registry
-	connectorService  *services.ConnectorService
-	transformerService *services.TransformerService
-	connectionService *services.ConnectionService
   authService       *services.AuthService
 }
 
 // NewServer creates a new WebAPI server
 func NewServer(
-	connectorService *services.ConnectorService,
-	transformerService *services.TransformerService,
-	connectionService *services.ConnectionService,
 	authService *services.AuthService,
+	mappingService *services.MappingService,
 ) *Server {
 	r := chi.NewRouter()
 
@@ -34,18 +29,13 @@ func NewServer(
 	// Create server
 	server := &Server{
 		router:            r,
-		connectorService:  connectorService,
-		transformerService: transformerService,
-		connectionService: connectionService,
     authService:       authService,  // Store the auth service
 	}
 
 	// Create handler registry
 	server.handlers = handlers.NewRegistry(
-		connectorService,
-		transformerService,
-		connectionService,
     authService,
+    mappingService,
 	)
 
 	// Setup routes

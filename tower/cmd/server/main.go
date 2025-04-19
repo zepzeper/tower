@@ -1,4 +1,3 @@
-// cmd/server/main.go
 package main
 
 import (
@@ -11,7 +10,6 @@ import (
 	"time"
 
 	"github.com/zepzeper/tower/internal/config"
-	"github.com/zepzeper/tower/internal/connectors/woocommerce"
 	"github.com/zepzeper/tower/internal/core/registry"
 	"github.com/zepzeper/tower/internal/database"
 	"github.com/zepzeper/tower/internal/database/repositories"
@@ -38,33 +36,23 @@ func main() {
 		log.Fatalf("Failed to migrate database schema: %v", err)
 	}
 
-	// Initialize connector registry
-	connectorRegistry := registry.NewConnectorRegistry()
-
 	authRepo := repositories.NewAuthRepository(dbManager.DB)
-
-	// Register built-in connectors
-	registerConnectors(connectorRegistry)
+  schemaRegistery := registry.NewSchemaRegistry()
 
 	// Create service layer
-	connectorService := services.NewConnectorService(connectorRegistry)
-	transformerService := services.NewTransformerService(dbManager, connectorRegistry)
-	jobManager := services.NewJobManager(dbManager, connectorService, transformerService)
-	connectionService := services.NewConnectionService(dbManager, connectorService, transformerService, jobManager)
   authService := services.NewAuthService(*authRepo, "123", 24*time.Hour);
+  mappingService := services.NewMappingService(*schemaRegistery)
 
 	// Create central server
 	server := server.NewServer(
-		connectorService,
-		transformerService,
-		connectionService,
     authService,
+    mappingService,
 	)
 
-	// Initialize job manager with existing connections
-	if err := jobManager.InitializeFromDatabase(context.Background()); err != nil {
-		log.Printf("Warning: Failed to initialize job manager: %v", err)
-	}
+	// // Initialize job manager with existing connections
+	// if err := jobManager.InitializeFromDatabase(context.Background()); err != nil {
+	// 	log.Printf("Warning: Failed to initialize job manager: %v", err)
+	// }
 
 	// Start server in a goroutine
 	go func() {
@@ -89,36 +77,4 @@ func main() {
 	}
 
 	log.Println("Server gracefully stopped")
-}
-
-// registerConnectors registers built-in connector implementations
-func registerConnectors(registry *registry.ConnectorRegistry) {
-	// WooCommerce connector (example configuration)
-	wooCommerceConnector, err := woocommerce.NewConnector(map[string]interface{}{
-		"api_url":        "https://example.com/wp-json/wc/v3",
-		"consumer_key":   "your_consumer_key",
-		"consumer_secret": "your_consumer_secret",
-	})
-	if err == nil {
-		registry.Register("woocommerce", wooCommerceConnector)
-	}
-
-	// // Mirakl connector (example configuration)
-	// miraklConnector, err := mirakl.NewConnector(map[string]interface{}{
-	// 	"marketplace": "example",
-	// 	"shop_id":     "your_shop_id",
-	// 	"api_key":     "your_api_key",
-	// })
-	// if err == nil {
-	// 	registry.Register("mirakl", miraklConnector)
-	// }
-	//
-	// // Kaufland connector (example configuration)
-	// kauflandConnector, err := kaufland.NewConnector(map[string]interface{}{
-	// 	"public_key":  "your_public_key",
-	// 	"private_key": "your_private_key",
-	// })
-	// if err == nil {
-	// 	registry.Register("kaufland", kauflandConnector)
-	// }
 }

@@ -1,4 +1,3 @@
-// internal/webapi/handlers/handler_registry.go
 package handlers
 
 import (
@@ -8,33 +7,22 @@ import (
 
 // Registry holds all the handlers for the internal API
 type Registry struct {
-	dashboardHandler *DashboardHandler
-	statsHandler     *StatsHandler
-  authHandler      *AuthHandler
+	mappingHandler *MappingHandler
+	authHandler *AuthHandler
 }
 
 // NewRegistry creates a new handler registry
 func NewRegistry(
-	connectorService *services.ConnectorService,
-	transformerService *services.TransformerService,
-	connectionService *services.ConnectionService,
 	authService *services.AuthService,
+	mappingService *services.MappingService,
 ) *Registry {
 	return &Registry{
-		dashboardHandler: NewDashboardHandler(connectionService),
-		statsHandler:     NewStatsHandler(connectorService, transformerService, connectionService),
-    authHandler:      NewAuthHandler(authService),
+		mappingHandler: NewMappingHandler(mappingService),
 	}
 }
 
 func (r *Registry) RegisterRoutes(router chi.Router) {
-    router.Route("/dashboard", func(router chi.Router) {
-        router.Get("/summary", r.dashboardHandler.GetSummary)
-        router.Get("/recent-activity", r.dashboardHandler.GetRecentActivity)
-    })
-
-    router.Route("/stats", func(router chi.Router) {
-        router.Get("/connections", r.statsHandler.GetConnectionStats)
-        router.Get("/executions", r.statsHandler.GetExecutionStats)
-    })
+	router.Route("/api/mappings", func(routes chi.Router) {
+		routes.Get("/schema", r.mappingHandler.Generate)
+	})
 }

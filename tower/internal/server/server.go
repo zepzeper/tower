@@ -23,27 +23,20 @@ type Server struct {
 
 // NewServer creates a new central server with both API and WebAPI
 func NewServer(
-	connectorService *services.ConnectorService,
-	transformerService *services.TransformerService,
-	connectionService *services.ConnectionService,
 	authService *services.AuthService,
+	mappingService *services.MappingService,
 ) *Server {
 	// Create main router
 	router := chi.NewRouter()
 
 	// Create API server (external API)
 	apiServer := api.NewServer(
-		connectorService,
-		transformerService,
-		connectionService,
 	)
 
 	// Create WebAPI server (internal API for web UI)
 	webapiServer := webapi.NewServer(
-		connectorService,
-		transformerService,
-		connectionService,
     authService,
+    mappingService,
 	)
 
 	// Create central server
