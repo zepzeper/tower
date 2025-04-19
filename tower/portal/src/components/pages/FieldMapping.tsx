@@ -89,22 +89,21 @@ const FieldMapping: React.FC = () => {
                 // Check if we already have connection details to avoid unnecessary calls
                 if (!connectionDetails || connectionDetails.id !== connectionIdSafe) {
                     // Use service to get saved mappings and schemas
-                    const savedMapping = await schemaService.getSavedMapping(connectionIdSafe);
-                    const sourceType = savedMapping?.sourceType ?? 'woocommerce';
-                    const targetType = savedMapping?.targetType ?? 'brincr';
+                    const sourceType = 'woocommerce';
+                    const targetType = 'brincr';
 
                     // Only fetch schemas if we don't have them already
                     if (sourceFields.length === 0 || targetFields.length === 0) {
-                        const { sourceFields: source, targetFields: target } =
+                        const { sourceFields: source, targetFields: target, mappings: mappings } =
                             await schemaService.getConnectionSchemas(sourceType, targetType);
 
                         setSourceFields(source);
                         setTargetFields(target);
-                    }
 
-                    // Use saved mappings if available and we don't already have mappings
-                    if (savedMapping?.mappings?.length && mappings.length === 0) {
-                        setMappings(savedMapping.mappings);
+                        // Use saved mappings if available and we don't already have mappings
+                        if (mappings?.length) {
+                            setMappings(mappings);
+                        }
                     }
 
                     setConnectionDetails({
