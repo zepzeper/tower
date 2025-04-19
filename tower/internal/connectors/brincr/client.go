@@ -86,7 +86,7 @@ func (c *Client) Execute(method, path string, body, result interface{}) error {
 
 // TestRequest makes a simple test request to the Brincr API
 func (c *Client) TestRequest() (interface{}, error) {
-	var result []map[string]interface{}
+	var result interface{}
 
 	q := url.Values{}
 	q.Add("filter[product_type]", "default") // change "123" to whatever value you want

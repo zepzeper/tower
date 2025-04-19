@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant Client
+    participant Adapter
+    participant Normalizer
+    participant CDM as Canonical Data Model
+    participant Service
+    
+    Client->>Adapter: Request data
+    Adapter->>External API: Raw API call
+    External API-->>Adapter: API-specific response
+    Adapter->>Normalizer: Apply field mappings
+    Normalizer->>CDM: Transform to canonical model
+    CDM->>Service: Provide normalized data
+    Service-->>Client: Return consistent response
+    
+    Note over Adapter,Normalizer: Field mapping & type conversion
+    Note over Normalizer,CDM: Data enrichment & validation
+    Note over CDM,Service: Business logic application

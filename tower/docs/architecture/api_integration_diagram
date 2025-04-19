@@ -1,0 +1,26 @@
+graph TB
+    A[External API 1] --> B[Adapter 1]
+    C[External API 2] --> D[Adapter 2]
+    E[External API 3] --> F[Adapter 3]
+    
+    B --> G[Normalization Layer]
+    D --> G
+    F --> G
+    
+    G --> H[Canonical Data Model]
+    
+    H --> I[Service Layer]
+    
+    I --> J[Client Application]
+    
+    K[Schema Registry] -.-> B
+    K -.-> D
+    K -.-> F
+    K -.-> H
+    
+    L[Transformation Rules] -.-> G
+    
+    style G fill:#f9f,stroke:#333,stroke-width:2px
+    style H fill:#bbf,stroke:#333,stroke-width:2px
+    style K fill:#bfb,stroke:#333,stroke-width:2px
+    style L fill:#bfb,stroke:#333,stroke-width:2px

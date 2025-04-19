@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 	"strconv"
 )
@@ -8,6 +9,7 @@ import (
 // GetEnv gets an environment variable or returns a default value
 func GetEnv(key, defaultValue string) string {
 	value := os.Getenv(key)
+    log.Println("VALUE:", value)
 	if value == "" {
 		return defaultValue
 	}

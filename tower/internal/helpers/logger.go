@@ -4,6 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
+
+	"github.com/joho/godotenv"
 )
 
 // Entry defines the structure of a JSON log entry
@@ -12,21 +16,40 @@ type Entry struct {
 	Response interface{} `json:"response"`
 }
 
-// PrintPretty logs the Entry as pretty-printed JSON
-func (e Entry) PrintPretty() {
-	// Try to decode raw JSON if Response is []byte
-	if raw, ok := e.Response.([]byte); ok {
-		var decoded interface{}
-		if err := json.Unmarshal(raw, &decoded); err == nil {
-			e.Response = decoded
-		}
-	}
-
-	jsonBytes, err := json.MarshalIndent(e, "", "  ")
+// prettyPrint formats and prints JSON data for readability
+func (e *Entry) PrettyPrint(label string, data interface{}) {
+	fmt.Println("\n" + label)
+	fmt.Println("----------------------------------------")
+	jsonData, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
-		log.Printf(`{"level":"error","message":"Failed to marshal log entry","uri":"%s","error":"%v"}`, e.URI, err)
+		fmt.Printf("Error marshaling data: %v\n", err)
 		return
 	}
+	fmt.Println(string(jsonData))
+	fmt.Println("----------------------------------------")
+}
 
-	fmt.Println(string(jsonBytes))
+func LoadEnvFile() {
+	// Try to find .env in current directory
+	err := godotenv.Load()
+	if err != nil {
+		// If not found, try to find it in the project root
+		cwd, err := os.Getwd()
+		if err == nil {
+			// Try various possible locations for .env
+			possiblePaths := []string{
+				filepath.Join(cwd, ".env"),
+				filepath.Join(cwd, "../.env"),
+				filepath.Join(cwd, "../../.env"),
+			}
+
+			for _, path := range possiblePaths {
+				if _, err := os.Stat(path); err == nil {
+					godotenv.Load(path)
+					log.Printf("Loaded environment from %s", path)
+					break
+				}
+			}
+		}
+	}
 }
