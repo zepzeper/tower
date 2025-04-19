@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
@@ -61,38 +61,60 @@ const FieldMapping: React.FC = () => {
   const [sourceFieldsExpanded, setSourceFieldsExpanded] = useState({});
   const [targetFieldsExpanded, setTargetFieldsExpanded] = useState({});
   const [loadingMapping, setIsLoadingMapping] = useState(false);
+  const lastTestedMappingKey = useRef('');
+
+    useEffect(() => {
+        // Only run when mapping changes and not during loading
+        if (!loadingMapping && mappings.length > 0) {
+            // Use a debounce timer to avoid multiple API calls
+            const debounceTimer = setTimeout(() => {
+                testMappings();
+            }, 1000); // Wait 1 second after changes before testing
+
+            // Clean up the timer if mappings change again
+            return () => clearTimeout(debounceTimer);
+        }
+    }, [mappings, loadingMapping]);
 
     useEffect(() => {
         const loadSchemas = async () => {
-            setIsLoading(true);
+            // Don't set loading if we already have data
+            if (sourceFields.length === 0 || targetFields.length === 0) {
+                setIsLoading(true);
+            }
 
             try {
-                const connectionIdSafe = connectionId ?? 'demo-id'; // fallback just in case
+                const connectionIdSafe = connectionId ?? 'demo-id';
 
-                // Use service to get saved mappings and schemas
-                const savedMapping = await schemaService.getSavedMapping(connectionIdSafe);
-                const sourceType = savedMapping?.sourceType ?? 'woocommerce';
-                const targetType = savedMapping?.targetType ?? 'brincr';
+                // Check if we already have connection details to avoid unnecessary calls
+                if (!connectionDetails || connectionDetails.id !== connectionIdSafe) {
+                    // Use service to get saved mappings and schemas
+                    const savedMapping = await schemaService.getSavedMapping(connectionIdSafe);
+                    const sourceType = savedMapping?.sourceType ?? 'woocommerce';
+                    const targetType = savedMapping?.targetType ?? 'brincr';
 
-                const { sourceFields, targetFields, mappings: suggestedMappings } =
-                    await schemaService.getConnectionSchemas(sourceType, targetType);
+                    // Only fetch schemas if we don't have them already
+                    if (sourceFields.length === 0 || targetFields.length === 0) {
+                        const { sourceFields: source, targetFields: target } =
+                            await schemaService.getConnectionSchemas(sourceType, targetType);
 
-                setSourceFields(sourceFields);
-                setTargetFields(targetFields);
+                        setSourceFields(source);
+                        setTargetFields(target);
+                    }
 
-                // Use saved mappings if available
-                if (savedMapping?.mappings?.length) {
-                    setMappings(savedMapping.mappings);
+                    // Use saved mappings if available and we don't already have mappings
+                    if (savedMapping?.mappings?.length && mappings.length === 0) {
+                        setMappings(savedMapping.mappings);
+                    }
+
+                    setConnectionDetails({
+                        id: connectionIdSafe,
+                        name: `${sourceType} to ${targetType}`,
+                        source: sourceType,
+                        target: targetType,
+                        status: 'active'
+                    });
                 }
-
-                setConnectionDetails({
-                    id: connectionIdSafe,
-                    name: `${sourceType} to ${targetType}`,
-                    source: sourceType,
-                    target: targetType,
-                    status: 'active'
-                });
-
             } catch (error) {
                 console.error('Error loading connection schemas:', error);
             } finally {
@@ -207,121 +229,111 @@ const FieldMapping: React.FC = () => {
 
     // Function to auto-map fields
     const autoMapFields = () => {
-        setIsLoadingMapping(true)
-
-        // Save current mappings to history before auto-mapping
+        setIsLoadingMapping(true);
         setMappingHistory([...mappingHistory, [...mappings]]);
 
         setTimeout(() => {
-            // Simple auto-mapping algorithm
+            // Collect all new mappings at once to avoid multiple state updates
             const newMappings = [...mappings];
+            let mappingsAdded = false;
 
-            // For each target field
             targetFields.forEach(targetField => {
-                // Check if it's already mapped
                 const alreadyMapped = mappings.some(m => m.targetField === targetField.id);
                 if (alreadyMapped) return;
 
-                // Try to find a matching source field
-                const matchingSourceField = sourceFields.find(sf => 
-                    // Exact name match
+                const matchingSourceField = sourceFields.find(sf =>
                     sf.name.toLowerCase() === targetField.name.toLowerCase() ||
-                        // Or source contains target
                         sf.name.toLowerCase().includes(targetField.name.toLowerCase()) ||
-                        // Or path ends with target name
                         sf.path.toLowerCase().endsWith(targetField.name.toLowerCase())
                 );
 
                 if (matchingSourceField) {
-                    // Check if this source field is available
-                    const sourceFieldAlreadyUsed = mappings.some(m => m.sourceField === matchingSourceField.id);
+                    const sourceFieldAlreadyUsed = newMappings.some(m => m.sourceField === matchingSourceField.id);
 
                     if (!sourceFieldAlreadyUsed) {
-                        // Add the mapping
                         newMappings.push({
                             id: `m${newMappings.length + 1}`,
                             sourceField: matchingSourceField.id,
                             targetField: targetField.id,
                             transform: matchingSourceField.type !== targetField.type ? 'parseFloat' : null
                         });
+                        mappingsAdded = true;
                     }
                 }
             });
 
-            setMappings(newMappings);
-            setIsLoadingMapping(false)
+            // Only update state if we actually added mappings
+            if (mappingsAdded) {
+                setMappings(newMappings);
+            }
 
-            // Run test mappings to show results
-            testMappings();
+            setIsLoadingMapping(false);
         }, 800);
     };
 
-    const testMappings = async () => {
-        // Simulate API call for test transformation
+    // Function to get field by ID - Move this up before testMappings
+    const getFieldById = (fieldId, type) => {
+        const fields = type === 'source' ? sourceFields : targetFields;
+        return fields.find(f => f.id === fieldId);
+    };
+
+    // Optimize testMappings to cache results and avoid redundant API calls
+    const testMappings = useCallback(async () => {
+        // Avoid testing if there are no mappings
+        if (mappings.length === 0) {
+            setTestData(null);
+            setPreviewResult(null);
+            return;
+        }
+
         setIsLoading(true);
 
         try {
-            const sourceData = await schemaService.getSchema(connectionDetails?.source ?? 'woocommerce');
+            // Generate a hash/key for the current mappings to check if we need to retest
+            const mappingKey = JSON.stringify(mappings);
 
-            const mockResult: Record<string, any> = {};
+            // If we already tested these exact mappings, use cached results
+            if (mappingKey === lastTestedMappingKey.current) {
+                setIsLoading(false);
+                return;
+            }
 
-            mappings.forEach(mapping => {
+            // Prepare mapping metadata for API call
+            const mappingMetadata = mappings.map(mapping => {
                 const sourceField = getFieldById(mapping.sourceField, 'source');
                 const targetField = getFieldById(mapping.targetField, 'target');
 
-                if (!sourceField || !targetField) return;
-
-                // Extract value from nested path
-                let sourceValue;
-                try {
-                    sourceValue = extractValueFromPath(sourceData, sourceField.path);
-                } catch {
-                    sourceValue = null;
-                }
-
-                // Apply transformation
-                if (mapping.transform && sourceValue !== null) {
-                    switch (mapping.transform) {
-                        case 'parseFloat':
-                            sourceValue = parseFloat(sourceValue);
-                            break;
-                        case 'toString':
-                            sourceValue = String(sourceValue);
-                            break;
-                        case 'trim':
-                            sourceValue = sourceValue.trim();
-                            break;
-                        case 'uppercase':
-                            sourceValue = sourceValue.toUpperCase();
-                            break;
-                        case 'lowercase':
-                            sourceValue = sourceValue.toLowerCase();
-                            break;
-                        case 'round':
-                            sourceValue = Math.round(parseFloat(sourceValue));
-                            break;
-                        case 'splitFirst':
-                            if (Array.isArray(sourceValue)) {
-                                sourceValue = sourceValue[0];
-                            } else if (typeof sourceValue === 'string') {
-                                sourceValue = sourceValue.split(' ')[0];
-                            }
-                            break;
-                        // Add others as needed
-                    }
-                }
-
-                mockResult[targetField.name] = sourceValue;
+                return {
+                    id: mapping.id,
+                    sourcePath: sourceField?.path,
+                    targetPath: targetField?.path,
+                    transform: mapping.transform,
+                    sourceFieldId: mapping.sourceField,
+                    targetFieldId: mapping.targetField,
+                };
             });
 
-            setTestData(sourceData);
-            setPreviewResult(mockResult);
+            // Use the schema service
+            const result = await schemaService.testMapping(
+                connectionId ?? 'demo-id',
+                connectionDetails?.source ?? 'woocommerce',
+                connectionDetails?.target ?? 'brincr',
+                mappingMetadata
+            );
+
+            // Set test data (source) and preview result (transformed)
+            setTestData(result.sourceData);
+            setPreviewResult(result.transformedData);
+
+            // Store this mapping key as last tested
+            lastTestedMappingKey.current = mappingKey;
+
         } catch (error) {
             console.error('Error testing mappings:', error);
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [mappings, connectionId, connectionDetails, sourceFields, targetFields]);
 
     // Function to save mappings
     const saveMappings = async () => {
@@ -339,6 +351,7 @@ const FieldMapping: React.FC = () => {
                 transform: mapping.transform,
                 sourceFieldId: mapping.sourceField,
                 targetFieldId: mapping.targetField,
+                operation: "products",
             };
         });
 
@@ -352,12 +365,6 @@ const FieldMapping: React.FC = () => {
 
         await schemaService.saveMapping(connectionId!, payload);
         setSaveSuccess(true);
-    };
-
-    // Function to get field by ID
-    const getFieldById = (fieldId, type) => {
-        const fields = type === 'source' ? sourceFields : targetFields;
-        return fields.find(f => f.id === fieldId);
     };
 
     // Function to get display transform name

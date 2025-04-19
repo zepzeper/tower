@@ -1,0 +1,62 @@
+{
+    "id": 794,
+    "name": "Premium Quality",
+    "slug": "premium-quality-19",
+    "permalink": "https://example.com/product/premium-quality-19/",
+    "date_created": "2017-03-23T17:01:14",
+    "date_modified": "2017-03-23T17:01:14",
+    "type": "simple",
+    "status": "publish",
+    "featured": false,
+    "catalog_visibility": "visible",
+    "description": "<p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</p>",
+    "short_description": "<p>Pellentesque habitant morbi tristique senectus et netus.</p>",
+    "sku": "PROD-123",
+    "price": "21.99",
+    "regular_price": "21.99",
+    "sale_price": "",
+    "on_sale": false,
+    "purchasable": true,
+    "total_sales": 0,
+    "virtual": false,
+    "downloadable": false,
+    "manage_stock": false,
+    "stock_quantity": null,
+    "stock_status": "instock",
+    "weight": "23",
+    "dimensions": {
+        "length": "10",
+        "width": "20",
+        "height": "15"
+    },
+    "shipping_required": true,
+    "shipping_taxable": true,
+    "shipping_class": "",
+    "reviews_allowed": true,
+    "average_rating": "0.00",
+    "rating_count": 0,
+    "categories": [
+        {
+            "id": 9,
+            "name": "Clothing",
+            "slug": "clothing"
+        },
+        {
+            "id": 14,
+            "name": "T-shirts",
+            "slug": "t-shirts"
+        }
+    ],
+    "tags": [],
+    "images": [
+        {
+            "id": 792,
+            "src": "https://example.com/wp-content/uploads/2017/03/T_2_front-4.jpg",
+            "name": "",
+            "alt": ""
+        }
+    ],
+    "attributes": [],
+    "variations": [],
+    "meta_data": []
+}

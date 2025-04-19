@@ -11,6 +11,7 @@ require (
 require (
 	cloud.google.com/go/compute/metadata v0.4.0 // indirect
 	github.com/dghubble/oauth1 v0.7.3 // indirect
+	github.com/go-chi/cors v1.2.1 // indirect
 	github.com/go-oauth2/oauth2/v4 v4.5.2 // indirect
 	github.com/go-pkgz/auth/v2 v2.0.0 // indirect
 	github.com/go-pkgz/repeater v1.2.0 // indirect

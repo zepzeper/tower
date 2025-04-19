@@ -1,32 +1,39 @@
 package registry
 
 import (
-	"sync"
-
-	"github.com/zepzeper/tower/internal/core/connectors"
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
 )
 
 // SchemaRegistry manages API schemas and their mappings
 type SchemaFetcher struct {
-	schemas       map[string]connectors.Schema
-	mappings      map[string][]MappingEntry
-	mu            sync.RWMutex
+	basePath string
 }
 
-// NewSchemaRegistry creates a new schema registry
-func NewSchemaRegistry() *SchemaFetcher {
+// NewSchemaFetcher creates a new StaticSchemaFetcher with preloaded schemas
+func NewSchemaFetcher(basePath string) *SchemaFetcher {
 	return &SchemaFetcher{
-		schemas:   make(map[string]connectors.Schema),
-		mappings:  make(map[string][]MappingEntry),
+		basePath: basePath,
 	}
 }
 
-// GetSchema retrieves a schema by connector ID
-func (r *SchemaFetcher) GetSchema(connectorID string) (connectors.Schema, bool) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	
-	schema, exists := r.schemas[connectorID]
-	return schema, exists
-}
+// GetSchema retrieves the schema by type from the in-memory map
+func (f *SchemaFetcher) GetSchema(schemaType, operation, sourceortarget string) (map[string]interface{}, error) {
+    filename := filepath.Join(f.basePath, sourceortarget + "_" + schemaType + "_" + operation +".json")
 
+    file, err := os.Open(filename)
+    if err != nil {
+        return nil, fmt.Errorf("could not open schema file %s: %w", filename, err)
+    }
+    defer file.Close()
+
+    var schema map[string]interface{}
+    decoder := json.NewDecoder(file)
+    if err := decoder.Decode(&schema); err != nil {
+        return nil, fmt.Errorf("could not decode JSON schema from %s: %w", filename, err)
+    }
+
+    return schema, nil
+}

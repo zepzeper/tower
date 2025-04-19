@@ -1,0 +1,78 @@
+{
+    "product_type": "default",
+    "category_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "vat_rate_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "unit_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "matrix_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "user_defined_1": "string",
+    "user_defined_2": "string",
+    "user_defined_3": "string",
+    "user_defined_4": "string",
+    "user_defined_5": "string",
+    "user_defined_6": "string",
+    "user_defined_7": "string",
+    "user_defined_8": "string",
+    "user_defined_9": "string",
+    "user_defined_10": "string",
+    "stock": {
+        "settings": {
+            "is_stock_item": true,
+            "critical_level": 9999999.9999,
+            "default_sales_warehouse_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "default_purchase_warehouse_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        }
+    },
+    "parts": [
+        {
+            "product_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "amount": 9999999.9999
+        }
+    ],
+    "assemble_type": "assemble_on_order",
+    "code": "string",
+    "description": {
+        "en_GB": "text",
+        "nl_NL": "dutch text",
+        "fr_FR": "french text"
+    },
+    "description_extended": {
+        "en_GB": "text",
+        "nl_NL": "dutch text",
+        "fr_FR": "french text"
+    },
+    "price_excl_vat": 9999999.9999,
+    "image": "string",
+    "file": "string",
+    "note": "string",
+    "stock_level": 9999999.9999,
+    "barcode": "string",
+    "package_length": 999999.99,
+    "package_width": 999999.99,
+    "package_height": 999999.99,
+    "package_volume": 999999.99,
+    "weight": 99999.999,
+    "fixed_stock_price": 99999.999,
+    "manufacturers_suggested_retail_price": 99999.999,
+    "manufacturers_suggested_retail_price_type": "Single MSRP price",
+    "accountancy": {
+        "export_override_income": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "export_override_income_eu": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "export_override_income_non_eu": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+    },
+    "web_portal": {
+        "description": {
+            "en_GB": "english text",
+            "nl_NL": "dutch text",
+            "de_DE": "german text"
+        }
+    },
+    "is_alert_message_shown": true,
+    "alert_message": "string",
+    "web_shop_uri": "string",
+    "is_from_web_shop": true,
+    "is_active": true,
+    "is_shown_in_price_list": true,
+    "is_shown_on_labels": true,
+    "is_shown_on_packing_slip": true,
+    "is_purchase_price_customizable": true
+}

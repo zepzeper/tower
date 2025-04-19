@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/zepzeper/tower/internal/database/repositories"
 	"github.com/zepzeper/tower/internal/server"
 	"github.com/zepzeper/tower/internal/services"
+	"github.com/zepzeper/tower/internal/services/mapping"
 )
 
 func main() {
@@ -37,11 +39,17 @@ func main() {
 	}
 
 	authRepo := repositories.NewAuthRepository(dbManager.DB)
-  schemaRegistery := registry.NewSchemaRegistry()
+
+  cwd, err := os.Getwd()
+  if err != nil {
+    log.Fatal(err)
+  }
+  schemaPath := filepath.Join(cwd, "internal/core/schemas")
+  schemaFetcher := registry.NewSchemaFetcher(schemaPath)
 
 	// Create service layer
   authService := services.NewAuthService(*authRepo, "123", 24*time.Hour);
-  mappingService := services.NewMappingService(*schemaRegistery)
+  mappingService := mapping.NewService(schemaFetcher)
 
 	// Create central server
 	server := server.NewServer(
