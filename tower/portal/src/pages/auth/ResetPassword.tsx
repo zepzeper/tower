@@ -4,20 +4,19 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
 import { Zap } from 'lucide-react';
 
-const ResetPassword = () => {
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [token, setToken] = useState('');
-  const [error, setError] = useState('');
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+const ResetPassword: React.FC = () => {
+  const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [token, setToken] = useState<string>('');
+  const [error, setError] = useState<string>('');
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useTheme();
   const { t } = useTranslation();
 
   useEffect(() => {
-    // Extract token from URL query parameters
     const searchParams = new URLSearchParams(location.search);
     const tokenParam = searchParams.get('token');
     if (tokenParam) {
@@ -25,35 +24,30 @@ const ResetPassword = () => {
     } else {
       setError(t('auth.resetPassword.invalidToken'));
     }
-  }, [location, t]);
+  }, [location.search, t]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
-    
-    // Basic validation
+
     if (password !== confirmPassword) {
       setError(t('auth.resetPassword.passwordMismatch'));
       return;
     }
-    
+
     if (password.length < 8) {
       setError(t('auth.resetPassword.passwordTooShort'));
       return;
     }
-    
+
     setIsLoading(true);
 
     try {
-      // Replace with your actual API call
-      // await api.post('/auth/reset-password', { token, password });
-      
-      // For demo purposes, simulate success after 1 second
-      setTimeout(() => {
-        setIsSuccess(true);
-      }, 1000);
-    } catch (err) {
-      setError(err.message || 'Failed to reset password');
+      // Simulate a success response after 1 second
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setIsSuccess(true);
+    } catch (err: any) {
+      setError(err.message || t('auth.resetPassword.genericError'));
     } finally {
       setIsLoading(false);
     }

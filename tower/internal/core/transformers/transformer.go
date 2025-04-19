@@ -1,240 +1,202 @@
 package transformers
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
-	"time"
-	
-	"github.com/zepzeper/tower/internal/core/connectors"
 )
 
-// FieldMapping defines how data should be mapped between fields
-type FieldMapping struct {
-	SourceField string `json:"sourceField"`
-	TargetField string `json:"targetField"`
+// FieldDefinition represents a single mappable field
+type FieldDefinition struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Type     string `json:"type"`
+	Path     string `json:"path"`
+	Sample   string `json:"sample,omitempty"`
+	Required bool   `json:"required,omitempty"`
 }
 
-// Function represents a transformation function to apply
-type Function struct {
-	Name        string   `json:"name"`
-	TargetField string   `json:"targetField"`
-	Args        []string `json:"args"`
+// MappingDefinition represents a field mapping
+type MappingDefinition struct {
+	ID          string  `json:"id"`
+	SourceField string  `json:"sourceField"`
+	TargetField string  `json:"targetField"`
+	Transform   *string `json:"transform"`
 }
 
-// Transformer holds the configuration for data transformation
-type Transformer struct {
-	ID          string        `json:"id"`
-	Name        string        `json:"name"`
-	Description string        `json:"description"`
-	Mappings    []FieldMapping `json:"mappings"`
-	Functions   []Function    `json:"functions"`
-	CreatedAt   time.Time     `json:"createdAt"`
-	UpdatedAt   time.Time     `json:"updatedAt"`
+// MappingData holds all fields and suggested mappings
+type MappingData struct {
+	SourceFields []FieldDefinition   `json:"sourceFields"`
+	TargetFields []FieldDefinition   `json:"targetFields"`
+	Mappings     []MappingDefinition `json:"mappings"`
 }
 
-// Transform applies the transformer's mappings and functions to input data
-func (t *Transformer) Transform(input connectors.DataPayload) (connectors.DataPayload, error) {
-	// Create the output map
-	output := connectors.DataPayload{}
+type schemaTransformOptions struct {
+	Prefix         string
+	IncludeRequired bool
+}
 
-	// Apply field mappings
-	for _, mapping := range t.Mappings {
-		value, err := getNestedValue(input, mapping.SourceField)
-		if err != nil {
-			// Skip this mapping if source field doesn't exist
-			continue
+// TransformSchema flattens and describes all fields in the schema
+func TransformSchema(schema map[string]interface{}, schemaType string, opts *schemaTransformOptions) []FieldDefinition {
+	if opts == nil {
+		opts = &schemaTransformOptions{
+			Prefix:         map[string]string{"source": "s", "target": "t"}[schemaType],
+			IncludeRequired: true,
 		}
-		
-		// Set the value in the output
-		err = setNestedValue(output, mapping.TargetField, value)
-		if err != nil {
-			return nil, fmt.Errorf("mapping error for %s → %s: %v", 
-				mapping.SourceField, mapping.TargetField, err)
+	}
+	fields := []FieldDefinition{}
+	counter := 1
+
+	var processObject func(mapData interface{}, path string, parent string)
+	processObject = func(mapData interface{}, path string, parent string) {
+		dataMap, ok := mapData.(map[string]interface{})
+		if !ok {
+			return
+		}
+
+		for key, value := range dataMap {
+			fullPath := key
+			if path != "" {
+				fullPath = path + "." + key
+			}
+
+			displayName := key
+			if parent != "" {
+				displayName = parent + "." + key
+			}
+
+			fieldType := "string"
+			sample := ""
+
+			switch v := value.(type) {
+			case string:
+				fieldType = "string"
+				sample = v
+			case float64:
+				fieldType = "number"
+				sample = fmt.Sprintf("%v", v)
+			case bool:
+				fieldType = "boolean"
+				sample = fmt.Sprintf("%v", v)
+			case []interface{}:
+				if len(v) > 0 {
+					first := v[0]
+					switch item := first.(type) {
+					case map[string]interface{}:
+						fieldType = "array.object"
+						for k, val := range item {
+							processObject(
+								map[string]interface{}{k: val},
+								fullPath+"[]."+k,
+								displayName+"[]."+k,
+							)
+						}
+						// Generate JSON snippet for preview
+						j, _ := json.Marshal(item)
+						sample = truncateString(string(j), 100)
+					default:
+						fieldType = fmt.Sprintf("array.%s", reflect.TypeOf(item).Kind())
+						j, _ := json.Marshal(v)
+						sample = truncateString(string(j), 100)
+					}
+				} else {
+					fieldType = "array"
+					sample = "[]"
+				}
+			case map[string]interface{}:
+				fieldType = "object"
+				processObject(v, fullPath, displayName)
+				j, _ := json.Marshal(v)
+				sample = truncateString(string(j), 100)
+			default:
+				fieldType = reflect.TypeOf(v).String()
+				sample = fmt.Sprintf("%v", v)
+			}
+
+			if fieldType != "object" {
+				isRequired := opts.IncludeRequired && (key == "id" || key == "sku" || key == "name" || key == "price" || key == "code" || key == "description")
+				field := FieldDefinition{
+					ID:       fmt.Sprintf("%s%d", opts.Prefix, counter),
+					Name:     key,
+					Type:     fieldType,
+					Path:     strings.ReplaceAll(fullPath, ".[].", "[]."),
+					Sample:   sample,
+					Required: isRequired,
+				}
+				fields = append(fields, field)
+				counter++
+			}
 		}
 	}
 
-	// Apply transformation functions
-	for _, fn := range t.Functions {
-		// Get function arguments (resolve field references)
-		args := make([]interface{}, 0, len(fn.Args))
-		for _, arg := range fn.Args {
-			if strings.HasPrefix(arg, "'") && strings.HasSuffix(arg, "'") {
-				// Literal string value
-				args = append(args, arg[1:len(arg)-1])
-			} else {
-				// Field reference
-				value, err := getNestedValue(input, arg)
-				if err != nil {
-					// Use nil for missing fields
-					args = append(args, nil)
-				} else {
-					args = append(args, value)
+	processObject(schema, "", "")
+	return fields
+}
+
+// GenerateMappingData attempts to auto-map fields based on name similarity
+func GenerateMappingData(sourceSchema, targetSchema map[string]interface{}) MappingData {
+	sourceFields := TransformSchema(sourceSchema, "source", nil)
+	targetFields := TransformSchema(targetSchema, "target", nil)
+
+	mappings := []MappingDefinition{}
+	mappingCounter := 1
+
+	for _, target := range targetFields {
+		targetName := strings.ToLower(target.Name)
+		var matchedSource *FieldDefinition
+
+		for _, source := range sourceFields {
+			sourceName := strings.ToLower(source.Name)
+
+			if sourceName == targetName ||
+				strings.Contains(sourceName, targetName) ||
+				strings.Contains(targetName, sourceName) ||
+				(targetName == "sku" && sourceName == "id") ||
+				(targetName == "description" && sourceName == "short_description") ||
+				(targetName == "price" && sourceName == "regular_price") ||
+				(targetName == "image" && sourceName == "images") {
+				matchedSource = &source
+				break
+			}
+		}
+
+		if matchedSource != nil {
+			var transform *string
+			if matchedSource.Type != target.Type {
+				if matchedSource.Type == "string" && target.Type == "number" {
+					tr := "parseFloat"
+					transform = &tr
+				} else if matchedSource.Type == "number" && target.Type == "string" {
+					tr := "toString"
+					transform = &tr
+				} else if strings.HasPrefix(matchedSource.Type, "array") && target.Type == "string" {
+					tr := "splitFirst"
+					transform = &tr
 				}
 			}
-		}
-		
-		// Apply the function
-		result, err := applyFunction(fn.Name, args)
-		if err != nil {
-			return nil, fmt.Errorf("function error for %s: %v", fn.Name, err)
-		}
-		
-		// Store the result
-		err = setNestedValue(output, fn.TargetField, result)
-		if err != nil {
-			return nil, fmt.Errorf("error setting function result for %s: %v", 
-				fn.TargetField, err)
+
+			mappings = append(mappings, MappingDefinition{
+				ID:          fmt.Sprintf("m%d", mappingCounter),
+				SourceField: matchedSource.ID,
+				TargetField: target.ID,
+				Transform:   transform,
+			})
+			mappingCounter++
 		}
 	}
 
-	return output, nil
-}
-
-// getNestedValue retrieves a potentially nested value from a DataPayload
-func getNestedValue(data connectors.DataPayload, path string) (interface{}, error) {
-	parts := strings.Split(path, ".")
-	current := data
-	
-	// Navigate through all but the last part
-	for i := 0; i < len(parts)-1; i++ {
-		part := parts[i]
-		next, ok := current[part]
-		if !ok {
-			return nil, fmt.Errorf("path %s not found at %s", path, part)
-		}
-		
-		// Try to convert to DataPayload
-		nextMap, ok := next.(map[string]interface{})
-		if !ok {
-			// Try another type of map
-			nextMapAlt, ok := next.(connectors.DataPayload)
-			if !ok {
-				return nil, fmt.Errorf("path %s blocked at %s: not a map", path, part)
-			}
-			current = nextMapAlt
-			continue
-		}
-		
-		// Convert to DataPayload for consistency
-		current = connectors.DataPayload(nextMap)
-	}
-	
-	// Get the final value
-	value, ok := current[parts[len(parts)-1]]
-	if !ok {
-		return nil, fmt.Errorf("path %s final key %s not found", path, parts[len(parts)-1])
-	}
-	
-	return value, nil
-}
-
-// setNestedValue sets a potentially nested value in a DataPayload
-func setNestedValue(data connectors.DataPayload, path string, value interface{}) error {
-	parts := strings.Split(path, ".")
-	current := data
-	
-	// Create nested maps as needed for all but the last part
-	for i := 0; i < len(parts)-1; i++ {
-		part := parts[i]
-		
-		// Check if this level exists
-		next, exists := current[part]
-		if !exists {
-			// Create a new map
-			newMap := connectors.DataPayload{}
-			current[part] = newMap
-			current = newMap
-			continue
-		}
-		
-		// Try to convert existing value to DataPayload
-		nextMap, ok := next.(map[string]interface{})
-		if !ok {
-			// Try another type of map
-			nextMapAlt, ok := next.(connectors.DataPayload)
-			if !ok {
-				return fmt.Errorf("path %s blocked at %s: existing value is not a map", path, part)
-			}
-			current = nextMapAlt
-			continue
-		}
-		
-		// Convert to DataPayload for consistency
-		current = connectors.DataPayload(nextMap)
-	}
-	
-	// Set the final value
-	current[parts[len(parts)-1]] = value
-	return nil
-}
-
-// applyFunction applies a named function to the given arguments
-func applyFunction(name string, args []interface{}) (interface{}, error) {
-	switch name {
-	case "concatenate":
-		return functionConcatenate(args)
-	case "uppercase":
-		return functionUppercase(args)
-	case "lowercase":
-		return functionLowercase(args)
-	case "trim":
-		return functionTrim(args)
-	// Add more functions as needed
-	default:
-		return nil, fmt.Errorf("unknown function: %s", name)
+	return MappingData{
+		SourceFields: sourceFields,
+		TargetFields: targetFields,
+		Mappings:     mappings,
 	}
 }
 
-// Function implementations
-
-func functionConcatenate(args []interface{}) (interface{}, error) {
-	if len(args) == 0 {
-		return "", nil
+// Utility
+func truncateString(s string, max int) string {
+	if len(s) <= max {
+		return s
 	}
-	
-	var result strings.Builder
-	for _, arg := range args {
-		if arg != nil {
-			result.WriteString(fmt.Sprintf("%v", arg))
-		}
-	}
-	
-	return result.String(), nil
-}
-
-func functionUppercase(args []interface{}) (interface{}, error) {
-	if len(args) != 1 {
-		return nil, errors.New("uppercase function requires exactly 1 argument")
-	}
-	
-	if args[0] == nil {
-		return "", nil
-	}
-	
-	return strings.ToUpper(fmt.Sprintf("%v", args[0])), nil
-}
-
-func functionLowercase(args []interface{}) (interface{}, error) {
-	if len(args) != 1 {
-		return nil, errors.New("lowercase function requires exactly 1 argument")
-	}
-	
-	if args[0] == nil {
-		return "", nil
-	}
-	
-	return strings.ToLower(fmt.Sprintf("%v", args[0])), nil
-}
-
-func functionTrim(args []interface{}) (interface{}, error) {
-	if len(args) != 1 {
-		return nil, errors.New("trim function requires exactly 1 argument")
-	}
-	
-	if args[0] == nil {
-		return "", nil
-	}
-	
-	return strings.TrimSpace(fmt.Sprintf("%v", args[0])), nil
+	return s[:max] + "..."
 }

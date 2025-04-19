@@ -5,21 +5,26 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Zap } from 'lucide-react';
 
-const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+interface LocationState {
+  from?: {
+    pathname: string;
+  };
+}
+
+const Login: React.FC = () => {
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [error, setError] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
   const { theme } = useTheme();
-  const { t } = useTranslation('en');
-  
-  // Get the redirect path from location state or default to dashboard
-  const from = location.state?.from?.pathname || '/';
+  const { t } = useTranslation();
 
-  const handleSubmit = async (e) => {
+  const from = (location.state as LocationState)?.from?.pathname || '/';
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
@@ -27,7 +32,7 @@ const Login = () => {
     try {
       await login(email, password);
       navigate(from, { replace: true });
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message || t('auth.login.invalidCredentials'));
     } finally {
       setIsLoading(false);

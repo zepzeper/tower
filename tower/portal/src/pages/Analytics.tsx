@@ -3,43 +3,70 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { 
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
 } from 'recharts';
 import { Calendar, Filter, Download, ArrowDown, ArrowUp } from 'lucide-react';
 
-const Analytics = () => {
+type TimeRange = 'week' | 'month' | 'year';
+
+interface ApiCallsEntry {
+  name: string;
+  calls: number;
+  errors: number;
+}
+
+interface PerformanceEntry {
+  name: string;
+  responseTime: number;
+  throughput: number;
+}
+
+interface IntegrationEntry {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface Stat {
+  id: number;
+  title: string;
+  value: string;
+  change: string;
+  trend: 'up' | 'down';
+  changeText: string;
+  bad?: boolean;
+}
+
+const Analytics: React.FC = () => {
   const { t } = useTranslation('pages');
   const { theme } = useTheme();
-  const [timeRange, setTimeRange] = useState('month'); // 'week', 'month', 'year'
-  
-  // Example data for charts
-  const apiCallsData = [
+  const [timeRange, setTimeRange] = useState<TimeRange>('month');
+
+  const apiCallsData: ApiCallsEntry[] = [
     { name: '1 May', calls: 1200, errors: 80 },
     { name: '8 May', calls: 1800, errors: 120 },
     { name: '15 May', calls: 1600, errors: 90 },
     { name: '22 May', calls: 2400, errors: 110 },
     { name: '29 May', calls: 2100, errors: 130 }
   ];
-  
-  const performanceData = [
+
+  const performanceData: PerformanceEntry[] = [
     { name: '1 May', responseTime: 120, throughput: 850 },
     { name: '8 May', responseTime: 140, throughput: 920 },
     { name: '15 May', responseTime: 110, throughput: 1050 },
     { name: '22 May', responseTime: 105, throughput: 1200 },
     { name: '29 May', responseTime: 115, throughput: 1100 }
   ];
-  
-  const integrationDistribution = [
+
+  const integrationDistribution: IntegrationEntry[] = [
     { name: 'Shopify', value: 35, color: '#10B981' },
     { name: 'HubSpot', value: 25, color: '#3B82F6' },
     { name: 'Stripe', value: 20, color: '#6366F1' },
     { name: 'Mailchimp', value: 15, color: '#F59E0B' },
     { name: 'Others', value: 5, color: '#71717A' }
   ];
-  
-  const COLORS = ['#10B981', '#3B82F6', '#6366F1', '#F59E0B', '#71717A'];
-  
-  const stats = [
+
+  const stats: Stat[] = [
     { 
       id: 1, 
       title: t('analytics.totalApiCalls'), 

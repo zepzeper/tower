@@ -16,29 +16,32 @@ import ConnectionEdit from './pages/connections/ConnectionEdit';
 import Analytics from './pages/Analytics';
 import Users from './pages/Users';
 
-// Protected route component
-const ProtectedRoute = ({ children }) => {
+import React from 'react';
+
+interface ProtectedRouteProps {
+  children: React.ReactElement;
+}
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
-  
+
   if (isLoading) {
     return <div className="flex h-screen items-center justify-center">Loading...</div>;
   }
-  
+
   if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
-  
+
   return children;
 };
 
-const App = () => {
+const App: React.FC = () => {
   return (
     <ThemeProvider>
-      {/* Add LanguageWrapper for URL-based language handling */}
       <LanguageWrapper />
-      
+
       <Routes>
-        {/* Routes with language prefixes */}
         {['', '/:lang'].map((langPath) => (
           <Route key={langPath} path={langPath}>
             {/* Auth routes */}
@@ -46,7 +49,7 @@ const App = () => {
             <Route path="register" element={<Register />} />
             <Route path="forgot-password" element={<ForgotPassword />} />
             <Route path="reset-password" element={<ResetPassword />} />
-            
+
             {/* Protected routes */}
             <Route
               path=""
@@ -56,7 +59,6 @@ const App = () => {
                 //</ProtectedRoute>
               }
             >
-              {/* Dashboard routes */}
               <Route index element={<Dashboard />} />
               <Route path="connections" element={<Connections />} />
               <Route path="connections/edit/:id" element={<ConnectionEdit />} />
@@ -67,9 +69,9 @@ const App = () => {
             </Route>
           </Route>
         ))}
-        
-        {/* Fallback route */}
-        <Route path="*" element={<Navigate to="/" />} />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </ThemeProvider>
   );

@@ -1,21 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Activity, Users, Database, ArrowUp, ArrowDown } from 'lucide-react';
+import React from 'react';
 
-const Dashboard = () => {
+interface Stats {
+  activeConnections: number;
+  totalUsers: number;
+  apiCalls: number;
+  growth: number;
+}
+
+interface ConnectionData {
+  name: string;
+  connections: number;
+}
+
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  trend?: 'up' | 'down';
+  theme: 'light' | 'dark';
+}
+
+const Dashboard: React.FC = () => {
   const { t } = useTranslation('pages');
   const { theme } = useTheme();
-  const [stats, setStats] = useState({
+  const [stats] = useState<Stats>({
     activeConnections: 24,
     totalUsers: 189,
     apiCalls: 15728,
-    growth: 18.2
+    growth: 18.2,
   });
 
-  // Example data for charts
-  const connectionData = [
+  const connectionData: ConnectionData[] = [
     { name: 'Jan', connections: 12 },
     { name: 'Feb', connections: 19 },
     { name: 'Mar', connections: 15 },
@@ -65,31 +85,23 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Charts */}
+      {/* Chart */}
       <div className={`p-6 rounded-lg shadow-md mb-8 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
         <h2 className={`text-lg font-medium mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
           {t('dashboard.connectionActivity')}
         </h2>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={connectionData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
+            <BarChart data={connectionData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" className={theme === 'dark' ? 'stroke-gray-700' : 'stroke-gray-200'} />
-              <XAxis 
-                dataKey="name" 
-                className={theme === 'dark' ? 'fill-gray-400' : 'fill-gray-600'} 
-              />
-              <YAxis 
-                className={theme === 'dark' ? 'fill-gray-400' : 'fill-gray-600'} 
-              />
-              <Tooltip 
-                contentStyle={{ 
+              <XAxis dataKey="name" className={theme === 'dark' ? 'fill-gray-400' : 'fill-gray-600'} />
+              <YAxis className={theme === 'dark' ? 'fill-gray-400' : 'fill-gray-600'} />
+              <Tooltip
+                contentStyle={{
                   backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
                   color: theme === 'dark' ? '#f3f4f6' : '#1f2937',
-                  border: theme === 'dark' ? '1px solid #374151' : '1px solid #e5e7eb'
-                }} 
+                  border: theme === 'dark' ? '1px solid #374151' : '1px solid #e5e7eb',
+                }}
               />
               <Legend />
               <Bar dataKey="connections" fill="#10b981" />
@@ -98,7 +110,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Recent Activity */}
+      {/* Recent Activity Table */}
       <div className={`p-6 rounded-lg shadow-md ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
         <h2 className={`text-lg font-medium mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
           {t('dashboard.recentActivity')}
@@ -107,18 +119,15 @@ const Dashboard = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className={theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'}>
               <tr>
-                <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300 uppercase tracking-wider' : 'text-gray-500 uppercase tracking-wider'}`}>
-                  {t('dashboard.eventType')}
-                </th>
-                <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300 uppercase tracking-wider' : 'text-gray-500 uppercase tracking-wider'}`}>
-                  {t('dashboard.connection')}
-                </th>
-                <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300 uppercase tracking-wider' : 'text-gray-500 uppercase tracking-wider'}`}>
-                  {t('dashboard.timestamp')}
-                </th>
-                <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300 uppercase tracking-wider' : 'text-gray-500 uppercase tracking-wider'}`}>
-                  {t('dashboard.status')}
-                </th>
+                {['eventType', 'connection', 'timestamp', 'status'].map((header) => (
+                  <th
+                    key={header}
+                    scope="col"
+                    className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300 uppercase tracking-wider' : 'text-gray-500 uppercase tracking-wider'}`}
+                  >
+                    {t(`dashboard.${header}`)}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className={`divide-y ${theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'}`}>
@@ -152,8 +161,7 @@ const Dashboard = () => {
   );
 };
 
-// Stat Card Component
-const StatCard = ({ title, value, icon, trend, theme }) => {
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon, trend, theme }) => {
   return (
     <div className={`p-6 rounded-lg shadow-md ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
       <div className="flex justify-between items-start">

@@ -1,18 +1,38 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
-import { UserPlus, Search, MoreHorizontal, CheckCircle, XCircle, Edit, Trash, UserX } from 'lucide-react';
+import { UserPlus, Search, CheckCircle, XCircle, Edit, Trash, UserX } from 'lucide-react';
 
-const Users = () => {
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: 'Admin' | 'Developer' | 'Viewer';
+  status: 'active' | 'inactive' | 'pending';
+  lastLogin: string | null;
+}
+
+interface StatusDisplay {
+  icon: JSX.Element;
+  text: string;
+  className: string;
+}
+
+interface Tab {
+  id: 'all' | 'active' | 'pending' | 'inactive';
+  name: string;
+}
+
+const Users: React.FC = () => {
   const { t } = useTranslation('pages');
   const { theme } = useTheme();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentView, setCurrentView] = useState('active'); // 'active', 'pending', 'inactive'
-  const [showModal, setShowModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
 
-  // Example users data
-  const usersData = [
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [currentView, setCurrentView] = useState<Tab['id']>('active');
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  const usersData: User[] = [
     { id: 1, name: 'John Doe', email: 'john.doe@example.com', role: 'Admin', status: 'active', lastLogin: '2023-05-15T10:30:00' },
     { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', role: 'Developer', status: 'active', lastLogin: '2023-05-14T16:45:00' },
     { id: 3, name: 'Alice Johnson', email: 'alice.johnson@example.com', role: 'Viewer', status: 'pending', lastLogin: null },
@@ -23,89 +43,76 @@ const Users = () => {
     { id: 8, name: 'Fiona Apple', email: 'fiona.apple@example.com', role: 'Viewer', status: 'pending', lastLogin: null },
   ];
 
-  // Filter users based on search term and current view
-  const filteredUsers = usersData.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          user.role.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesView = currentView === 'all' || user.status === currentView;
-    
-    return matchesSearch && matchesView;
-  });
-
-  // Get status indicator
-  const getStatusDisplay = (status) => {
-    switch (status) {
-      case 'active':
-        return { 
-          icon: <CheckCircle size={16} className="text-green-500" />, 
-          text: t('users.statusActive'),
-          className: 'text-green-500'
-        };
-      case 'inactive':
-        return { 
-          icon: <XCircle size={16} className="text-red-500" />, 
-          text: t('users.statusInactive'),
-          className: 'text-red-500'
-        };
-      case 'pending':
-        return { 
-          icon: <UserX size={16} className="text-yellow-500" />, 
-          text: t('users.statusPending'),
-          className: 'text-yellow-500'
-        };
-      default:
-        return { 
-          icon: <XCircle size={16} className="text-gray-500" />, 
-          text: t('users.statusUnknown'),
-          className: 'text-gray-500'
-        };
-    }
-  };
-
-  // Format date
-  const formatDate = (dateString) => {
-    if (!dateString) return t('users.never');
-    
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat(undefined, {
-      dateStyle: 'medium',
-      timeStyle: 'short'
-    }).format(date);
-  };
-
-  // Handle user actions
-  const handleUserAction = (action, user) => {
-    setSelectedUser(user);
-    
-    switch (action) {
-      case 'edit':
-        // Navigate to edit user page or open edit modal
-        console.log('Edit user:', user);
-        break;
-      case 'delete':
-        setShowModal(true);
-        break;
-      default:
-        break;
-    }
-  };
-
-  // Handle confirm delete
-  const handleConfirmDelete = () => {
-    console.log('Delete user:', selectedUser);
-    // In a real app, you would call your API to delete the user
-    setShowModal(false);
-    setSelectedUser(null);
-  };
-
-  // Tabs for user views
-  const tabs = [
+  const tabs: Tab[] = [
     { id: 'all', name: t('users.allUsers') },
     { id: 'active', name: t('users.activeUsers') },
     { id: 'pending', name: t('users.pendingUsers') },
     { id: 'inactive', name: t('users.inactiveUsers') },
   ];
+
+  const filteredUsers = usersData.filter((user) => {
+    const matchesSearch =
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesView = currentView === 'all' || user.status === currentView;
+    return matchesSearch && matchesView;
+  });
+
+  const getStatusDisplay = (status: User['status']): StatusDisplay => {
+    switch (status) {
+      case 'active':
+        return {
+          icon: <CheckCircle size={16} className="text-green-500" />,
+          text: t('users.statusActive'),
+          className: 'text-green-500',
+        };
+      case 'inactive':
+        return {
+          icon: <XCircle size={16} className="text-red-500" />,
+          text: t('users.statusInactive'),
+          className: 'text-red-500',
+        };
+      case 'pending':
+        return {
+          icon: <UserX size={16} className="text-yellow-500" />,
+          text: t('users.statusPending'),
+          className: 'text-yellow-500',
+        };
+      default:
+        return {
+          icon: <XCircle size={16} className="text-gray-500" />,
+          text: t('users.statusUnknown'),
+          className: 'text-gray-500',
+        };
+    }
+  };
+
+  const formatDate = (dateString: string | null): string => {
+    if (!dateString) return t('users.never');
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(date);
+  };
+
+  const handleUserAction = (action: 'edit' | 'delete', user: User) => {
+    setSelectedUser(user);
+    if (action === 'edit') {
+      console.log('Edit user:', user);
+    } else if (action === 'delete') {
+      setShowModal(true);
+    }
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedUser) {
+      console.log('Delete user:', selectedUser);
+      setShowModal(false);
+      setSelectedUser(null);
+    }
+  };
 
   return (
     <div className="p-6">

@@ -17,13 +17,19 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
 const Sidebar = () => {
   const location = useLocation();
   const { theme } = useTheme();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { t, i18n } = useTranslation('pages');
   
-  const navigation = [
+  const navigation: NavigationItem[] = [
     { name: t('navigation.dashboard'), href: '/', icon: LayoutDashboard },
     { name: t('navigation.connections'), href: '/connections', icon: LinkIcon },
     { name: t('navigation.apiIntegrations'), href: '/integrations', icon: Database },
@@ -31,7 +37,7 @@ const Sidebar = () => {
     { name: t('navigation.users'), href: '/users', icon: Users },
   ];
   
-  const settingsNavigation = [
+  const settingsNavigation: NavigationItem[] = [
     { name: t('navigation.general'), href: '/settings/general', icon: Settings },
     { name: t('navigation.security'), href: '/settings/security', icon: Shield },
     { name: t('navigation.account'), href: '/settings/account', icon: UserCog },
@@ -118,21 +124,8 @@ const Sidebar = () => {
           </li>
         </ul>
       </nav>
-      
     </div>
   );
 };
 
 export default Sidebar;
-
-//<div className={`p-4 border-t ${theme === 'light' ? 'border-gray-200' : 'border-gray-700'}`}>
-//  <div className="flex items-center space-x-3 p-2">
-//    <div className={`h-8 w-8 rounded-full ${theme === 'light' ? 'bg-green-100 text-green-600' : 'bg-green-800 text-green-100'} flex items-center justify-center`}>
-//      <span className="font-bold">A</span>
-//    </div>
-//    <div>
-//      <p className="text-sm font-medium">Admin User</p>
-//      <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>admin@example.com</p>
-//    </div>
-//  </div>
-//</div>

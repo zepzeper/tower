@@ -3,14 +3,28 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { Search, ShoppingCart, Users, CreditCard, Mail, Database } from 'lucide-react';
 
-const Integrations = () => {
+interface Category {
+  id: string;
+  name: string;
+  icon?: React.ElementType;
+}
+
+interface Integration {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
+  popular: boolean;
+  logo: string; // Emoji or string symbol
+}
+
+const Integrations: React.FC = () => {
   const { t } = useTranslation('pages');
   const { theme } = useTheme();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [activeCategory, setActiveCategory] = useState<string>('all');
 
-  // Integration categories
-  const categories = [
+  const categories: Category[] = [
     { id: 'all', name: t('integrations.categories.allCategories') },
     { id: 'ecommerce', name: t('integrations.categories.ecommerce'), icon: ShoppingCart },
     { id: 'crm', name: t('integrations.categories.crm'), icon: Users },
@@ -18,8 +32,7 @@ const Integrations = () => {
     { id: 'marketing', name: t('integrations.categories.marketing'), icon: Mail },
   ];
 
-  // Example integrations data
-  const integrations = [
+  const integrations: Integration[] = [
     { id: 1, name: 'Shopify', description: 'Connect your online store', category: 'ecommerce', popular: true, logo: '🛒' },
     { id: 2, name: 'HubSpot', description: 'Customer relationship management', category: 'crm', popular: true, logo: '🤝' },
     { id: 3, name: 'Mailchimp', description: 'Email marketing platform', category: 'marketing', popular: true, logo: '📧' },
@@ -34,12 +47,10 @@ const Integrations = () => {
     { id: 12, name: 'Mailerlite', description: 'Email marketing tool', category: 'marketing', popular: false, logo: '📨' },
   ];
 
-  // Filter integrations based on search and category
-  const filteredIntegrations = integrations.filter(integration => {
-    const matchesSearch = integration.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          integration.description.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredIntegrations = integrations.filter((integration) => {
+    const matchesSearch = integration.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      integration.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = activeCategory === 'all' || integration.category === activeCategory;
-    
     return matchesSearch && matchesCategory;
   });
 
@@ -54,7 +65,7 @@ const Integrations = () => {
         </p>
       </div>
 
-      {/* Search and filter */}
+      {/* Search + Filters */}
       <div className={`p-6 mb-8 rounded-lg shadow-md ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="relative w-full md:max-w-xs">
@@ -66,40 +77,40 @@ const Integrations = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className={`block w-full pl-10 pr-3 py-2 border rounded-md ${
-                theme === 'dark' 
-                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-green-500 focus:ring-green-500' 
+                theme === 'dark'
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-green-500 focus:ring-green-500'
                   : 'border-gray-300 placeholder-gray-500 focus:border-green-500 focus:ring-green-500'
               }`}
               placeholder={t('integrations.searchPlaceholder')}
             />
           </div>
-          
+
           <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
+            {categories.map(({ id, name, icon: Icon }) => (
               <button
-                key={category.id}
-                onClick={() => setActiveCategory(category.id)}
+                key={id}
+                onClick={() => setActiveCategory(id)}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center ${
-                  activeCategory === category.id
+                  activeCategory === id
                     ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:bg-opacity-30 dark:text-green-300'
                     : theme === 'dark'
                       ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                {category.icon && <category.icon size={16} className="mr-1.5" />}
-                {category.name}
+                {Icon && <Icon size={16} className="mr-1.5" />}
+                {name}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Integrations grid */}
+      {/* Integrations Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredIntegrations.map((integration) => (
-          <div 
-            key={integration.id} 
+          <div
+            key={integration.id}
             className={`p-6 rounded-lg shadow-md ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}
           >
             <div className="flex items-start space-x-4">
@@ -124,7 +135,7 @@ const Integrations = () => {
             </div>
 
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <button 
+              <button
                 className="w-full px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
               >
                 {t('integrations.connectButton')}
@@ -133,7 +144,7 @@ const Integrations = () => {
           </div>
         ))}
       </div>
-      
+
       {filteredIntegrations.length === 0 && (
         <div className={`text-center py-12 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
           <Database size={48} className="mx-auto mb-4" />

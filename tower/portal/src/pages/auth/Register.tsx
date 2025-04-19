@@ -5,30 +5,37 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Zap } from 'lucide-react';
 
-const Register = () => {
-    const [formData, setFormData] = useState({
+interface RegisterFormData {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+}
+
+const Register: React.FC = () => {
+    const [formData, setFormData] = useState<RegisterFormData>({
         name: '',
         email: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
     });
-    const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+
+    const [error, setError] = useState<string>('');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const navigate = useNavigate();
     const { register } = useAuth();
     const { theme } = useTheme();
     const { t } = useTranslation();
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError('');
 
-        // Basic validation
         if (formData.password !== formData.confirmPassword) {
             setError(t('auth.register.passwordMismatch'));
             return;
@@ -39,8 +46,8 @@ const Register = () => {
         try {
             await register(formData);
             navigate('/');
-        } catch (err) {
-            setError(err.message || 'Registration failed');
+        } catch (err: any) {
+            setError(err.message || t('auth.register.failed'));
         } finally {
             setIsLoading(false);
         }
@@ -68,7 +75,7 @@ const Register = () => {
                         </Link>
                     </p>
                 </div>
-                
+
                 {error && (
                     <div className={`rounded-md ${theme === 'light' ? 'bg-red-50' : 'bg-red-900 bg-opacity-20'} p-4`}>
                         <div className="flex">
@@ -83,7 +90,7 @@ const Register = () => {
                         </div>
                     </div>
                 )}
-                
+
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <div className="rounded-md shadow-sm -space-y-px">
                         <div>
@@ -96,10 +103,10 @@ const Register = () => {
                                 value={formData.name}
                                 onChange={handleChange}
                                 className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                                    theme === 'light' 
-                                        ? 'border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-green-500 focus:border-green-500'
-                                        : 'border-gray-700 placeholder-gray-400 text-white bg-gray-800 focus:ring-green-500 focus:border-green-500'
-                                } rounded-t-md focus:outline-none focus:z-10 sm:text-sm`}
+theme === 'light' 
+? 'border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-green-500 focus:border-green-500'
+: 'border-gray-700 placeholder-gray-400 text-white bg-gray-800 focus:ring-green-500 focus:border-green-500'
+} rounded-t-md focus:outline-none focus:z-10 sm:text-sm`}
                                 placeholder={t('auth.register.nameLabel')}
                             />
                         </div>
@@ -114,10 +121,10 @@ const Register = () => {
                                 value={formData.email}
                                 onChange={handleChange}
                                 className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                                    theme === 'light' 
-                                        ? 'border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-green-500 focus:border-green-500'
-                                        : 'border-gray-700 placeholder-gray-400 text-white bg-gray-800 focus:ring-green-500 focus:border-green-500'
-                                } focus:outline-none focus:z-10 sm:text-sm`}
+theme === 'light' 
+? 'border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-green-500 focus:border-green-500'
+: 'border-gray-700 placeholder-gray-400 text-white bg-gray-800 focus:ring-green-500 focus:border-green-500'
+} focus:outline-none focus:z-10 sm:text-sm`}
                                 placeholder={t('auth.register.emailLabel')}
                             />
                         </div>
@@ -132,10 +139,10 @@ const Register = () => {
                                 value={formData.password}
                                 onChange={handleChange}
                                 className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                                    theme === 'light' 
-                                        ? 'border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-green-500 focus:border-green-500'
-                                        : 'border-gray-700 placeholder-gray-400 text-white bg-gray-800 focus:ring-green-500 focus:border-green-500'
-                                } focus:outline-none focus:z-10 sm:text-sm`}
+theme === 'light' 
+? 'border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-green-500 focus:border-green-500'
+: 'border-gray-700 placeholder-gray-400 text-white bg-gray-800 focus:ring-green-500 focus:border-green-500'
+} focus:outline-none focus:z-10 sm:text-sm`}
                                 placeholder={t('auth.register.passwordLabel')}
                             />
                         </div>
@@ -150,10 +157,10 @@ const Register = () => {
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
                                 className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                                    theme === 'light' 
-                                        ? 'border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-green-500 focus:border-green-500'
-                                        : 'border-gray-700 placeholder-gray-400 text-white bg-gray-800 focus:ring-green-500 focus:border-green-500'
-                                } rounded-b-md focus:outline-none focus:z-10 sm:text-sm`}
+theme === 'light' 
+? 'border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-green-500 focus:border-green-500'
+: 'border-gray-700 placeholder-gray-400 text-white bg-gray-800 focus:ring-green-500 focus:border-green-500'
+} rounded-b-md focus:outline-none focus:z-10 sm:text-sm`}
                                 placeholder={t('auth.register.confirmPasswordLabel')}
                             />
                         </div>
@@ -164,10 +171,10 @@ const Register = () => {
                             type="submit"
                             disabled={isLoading}
                             className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                                theme === 'light' 
-                                    ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
-                                    : 'bg-green-600 hover:bg-green-700 focus:ring-green-400'
-                                } focus:outline-none focus:ring-2 focus:ring-offset-2`}
+theme === 'light' 
+? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
+: 'bg-green-600 hover:bg-green-700 focus:ring-green-400'
+} focus:outline-none focus:ring-2 focus:ring-offset-2`}
                         >
                             {isLoading ? (
                                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
@@ -177,12 +184,12 @@ const Register = () => {
                                     </svg>
                                 </span>
                             ) : (
-                                <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                                    <svg className={`h-5 w-5 ${theme === 'light' ? 'text-green-500 group-hover:text-green-400' : 'text-green-300 group-hover:text-green-200'}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                                    </svg>
-                                </span>
-                            )}
+                                    <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                                        <svg className={`h-5 w-5 ${theme === 'light' ? 'text-green-500 group-hover:text-green-400' : 'text-green-300 group-hover:text-green-200'}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                                        </svg>
+                                    </span>
+                                )}
                             {isLoading ? t('auth.register.creatingAccount') : t('auth.register.createAccount')}
                         </button>
                     </div>

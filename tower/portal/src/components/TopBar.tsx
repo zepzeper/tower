@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 
+type Language = 'en' | 'nl';
+
 const TopBar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -17,7 +19,7 @@ const TopBar = () => {
     navigate('/login');
   };
 
-  const handleLanguageChange = (lang) => {
+  const handleLanguageChange = (lang: Language) => {
     i18n.changeLanguage(lang);
     setShowDropdown(false);
   };

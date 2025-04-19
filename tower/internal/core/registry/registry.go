@@ -162,7 +162,7 @@ func (r *SchemaRegistry) LoadFromDatabase() error {
 // SaveSchemaToDatabase saves a connector schema to the database
 func (r *SchemaRegistry) SaveSchemaToDatabase(connectorID string, schema connectors.Schema) error {
 	// Convert schema to JSON
-	schemaJSON, err := json.Marshal(schema)
+	_, err := json.Marshal(schema)
 	if err != nil {
 		return fmt.Errorf("error serializing schema: %w", err)
 	}
