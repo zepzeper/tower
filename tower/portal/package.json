@@ -19,14 +19,16 @@
     "vite": "^6.3.1"
   },
   "dependencies": {
+    "@material-tailwind/react": "^2.1.10",
     "@vitejs/plugin-react": "^4.4.0",
     "i18next": "^25.0.0",
-    "i18next-browser-languagedetector": "^8.0.4",
+    "i18next-browser-languagedetector": "^8.0.5",
     "i18next-http-backend": "^3.0.2",
     "lucide-react": "^0.488.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-i18next": "^15.4.1",
-    "react-router-dom": "^7.5.0"
+    "react-router-dom": "^7.5.0",
+    "recharts": "^2.15.3"
   }
 }

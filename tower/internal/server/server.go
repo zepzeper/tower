@@ -26,6 +26,7 @@ func NewServer(
 	connectorService *services.ConnectorService,
 	transformerService *services.TransformerService,
 	connectionService *services.ConnectionService,
+	authService *services.AuthService,
 ) *Server {
 	// Create main router
 	router := chi.NewRouter()
@@ -42,6 +43,7 @@ func NewServer(
 		connectorService,
 		transformerService,
 		connectionService,
+    authService,
 	)
 
 	// Create central server

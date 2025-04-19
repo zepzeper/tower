@@ -14,6 +14,7 @@ import (
 	"github.com/zepzeper/tower/internal/connectors/woocommerce"
 	"github.com/zepzeper/tower/internal/core/registry"
 	"github.com/zepzeper/tower/internal/database"
+	"github.com/zepzeper/tower/internal/database/repositories"
 	"github.com/zepzeper/tower/internal/server"
 	"github.com/zepzeper/tower/internal/services"
 )
@@ -40,6 +41,8 @@ func main() {
 	// Initialize connector registry
 	connectorRegistry := registry.NewConnectorRegistry()
 
+	authRepo := repositories.NewAuthRepository(dbManager.DB)
+
 	// Register built-in connectors
 	registerConnectors(connectorRegistry)
 
@@ -48,12 +51,14 @@ func main() {
 	transformerService := services.NewTransformerService(dbManager, connectorRegistry)
 	jobManager := services.NewJobManager(dbManager, connectorService, transformerService)
 	connectionService := services.NewConnectionService(dbManager, connectorService, transformerService, jobManager)
+  authService := services.NewAuthService(*authRepo, "123", 24*time.Hour);
 
 	// Create central server
 	server := server.NewServer(
 		connectorService,
 		transformerService,
 		connectionService,
+    authService,
 	)
 
 	// Initialize job manager with existing connections

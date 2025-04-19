@@ -1,0 +1,224 @@
+{
+    "common": {
+        "loading": "Laden...",
+        "error": "Er is een fout opgetreden",
+        "success": "Succes!",
+        "save": "Opslaan",
+        "cancel": "Annuleren",
+        "close": "Sluiten",
+        "search": "Zoeken...",
+        "submit": "Verzenden",
+        "back": "Terug",
+        "next": "Volgende",
+        "or": "Of"
+    },
+    "navigation": {
+        "dashboard": "Dashboard",
+        "connections": "Koppelingen",
+        "apiIntegrations": "API-integraties",
+        "analytics": "Analyses",
+        "users": "Gebruikers",
+        "settings": "Instellingen",
+        "signOut": "Uitloggen"
+    },
+    "topBar": {
+        "search": "Zoeken...",
+        "toggleDarkMode": "Donkere modus wisselen",
+        "notifications": "Notificaties"
+    },
+    "sidebar": {
+        "logo": "Tower"
+    },
+    "settings": {
+        "general": "Algemeen",
+        "security": "Beveiliging",
+        "account": "Account",
+        "notifications": "Notificaties",
+        "regional": "Regionaal",
+        "title": "Instellingen",
+        "general": {
+            "title": "Algemene instellingen",
+            "appPreferences": "Applicatievoorkeuren",
+            "appPreferencesDescription": "Beheer je applicatiebrede instellingen en voorkeuren",
+            "appName": "Applicatienaam",
+            "displayLanguage": "Standaard weergavetaal"
+        },
+        "security": {
+            "title": "Beveiligingsinstellingen",
+            "authSecurity": "Authenticatie en beveiliging",
+            "authSecurityDescription": "Beheer je beveiligingsvoorkeuren en authenticatieopties",
+            "twoFactorAuth": "Tweefactorauthenticatie",
+            "twoFactorAuthDescription": "Voeg een extra beveiligingslaag toe aan je account",
+            "changePassword": "Wachtwoord wijzigen"
+        },
+        "account": {
+            "title": "Accountinstellingen",
+            "profileInfo": "Profielinformatie",
+            "profileInfoDescription": "Update je accountgegevens en persoonlijke informatie",
+            "fullName": "Volledige naam",
+            "emailAddress": "E-mailadres"
+        },
+        "notifications": {
+            "title": "Notificatie-instellingen",
+            "notificationPreferences": "Notificatievoorkeuren",
+            "notificationPreferencesDescription": "Configureer hoe en wanneer je notificaties ontvangt",
+            "emailNotifications": "E-mailnotificaties",
+            "emailNotificationsDescription": "Ontvang e-mailnotificaties voor belangrijke gebeurtenissen",
+            "browserNotifications": "Browsernotificaties",
+            "browserNotificationsDescription": "Ontvang browsernotificaties"
+        },
+        "regional": {
+            "title": "Regionale instellingen",
+            "locationFormat": "Locatie- en formaatvoorkeuren",
+            "locationFormatDescription": "Configureer regionale instellingen en formaatvoorkeuren",
+            "timezone": "Tijdzone",
+            "dateFormat": "Datumformaat"
+        }
+    },
+    "auth": {
+        "login": {
+            "title": "Log in op je account",
+            "createAccount": "maak een nieuw account aan",
+            "emailLabel": "E-mailadres",
+            "passwordLabel": "Wachtwoord",
+            "rememberMe": "Onthoud mij",
+            "forgotPassword": "Wachtwoord vergeten?",
+            "signIn": "Inloggen",
+            "signingIn": "Inloggen...",
+            "invalidCredentials": "Ongeldig e-mailadres of wachtwoord"
+        },
+        "register": {
+            "title": "Maak je account aan",
+            "signInExisting": "log in op bestaand account",
+            "nameLabel": "Volledige naam",
+            "emailLabel": "E-mailadres",
+            "passwordLabel": "Wachtwoord",
+            "confirmPasswordLabel": "Bevestig wachtwoord",
+            "createAccount": "Account aanmaken",
+            "creatingAccount": "Account aanmaken...",
+            "passwordMismatch": "Wachtwoorden komen niet overeen"
+        },
+        "forgotPassword": {
+            "title": "Reset je wachtwoord",
+            "returnToSignIn": "terug naar inloggen",
+            "emailLabel": "E-mailadres",
+            "sendResetLink": "Resetlink versturen",
+            "sending": "Versturen...",
+            "resetLinkSent": "Als er een account bestaat met het e-mailadres {email}, hebben we instructies gestuurd om je wachtwoord te resetten.",
+            "failedToSendReset": "Kon resetlink niet versturen. Probeer het opnieuw."
+        },
+        "resetPassword": {
+            "title": "Reset je wachtwoord",
+            "enterNewPassword": "Voer hieronder je nieuwe wachtwoord in",
+            "newPasswordLabel": "Nieuw wachtwoord",
+            "confirmPasswordLabel": "Bevestig wachtwoord",
+            "resetPassword": "Wachtwoord resetten",
+            "resettingPassword": "Wachtwoord resetten...",
+            "passwordResetSuccess": "Wachtwoord succesvol gereset",
+            "passwordResetDescription": "Je wachtwoord is succesvol gereset.",
+            "backToLogin": "Terug naar inloggen",
+            "passwordMismatch": "Wachtwoorden komen niet overeen",
+            "passwordTooShort": "Wachtwoord moet minimaal 8 tekens lang zijn",
+            "invalidToken": "Ongeldige of ontbrekende resettoken"
+        }
+    },
+    "integrations": {
+        "title": "API-integraties",
+        "subtitle": "Verbind TowerAPI met jouw favoriete tools en diensten",
+        "searchPlaceholder": "🔍 Zoek integraties...",
+        "noResults": "Geen resultaten gevonden",
+        "tryDifferentSearch": "Probeer een andere zoekterm of categorie",
+        "connectButton": "Verbinden",
+        "popular": "Populair",
+        "categories": {
+            "allCategories": "Alle Categorieën",
+            "ecommerce": "E-commerce",
+            "crm": "CRM",
+            "finance": "Financiën",
+            "marketing": "Marketing"
+        }
+    },
+    "dashboard": {
+        "overview": "Monitor je API-verbindingen en prestaties in één oogopslag",
+        "activeConnections": "Actieve Verbindingen",
+        "totalUsers": "Totaal Gebruikers",
+        "apiCalls": "API-aanroepen (30d)",
+        "growth": "Maandelijkse Groei",
+        "connectionActivity": "Verbindingsactiviteit",
+        "recentActivity": "Recente Activiteit",
+        "eventType": "Type Gebeurtenis",
+        "connection": "Verbinding",
+        "timestamp": "Tijdstempel",
+        "status": "Status",
+        "apiRequest": "API-verzoek",
+        "success": "Geslaagd",
+        "failed": "Mislukt"
+    },
+    "connections": {
+        "description": "Beheer al je integraties",
+        "addNew": "Verbinding Toevoegen",
+        "searchPlaceholder": "Zoek verbindingen...",
+        "statusActive": "Actief",
+        "statusInactive": "Inactief",
+        "statusPending": "In afwachting",
+        "statusUnknown": "Onbekend",
+        "lastSync": "Laatste Sync",
+        "never": "Nooit",
+        "configure": "Configureren",
+        "viewData": "Data Bekijken",
+        "activate": "Activeren",
+        "noResults": "Geen verbindingen gevonden",
+        "tryDifferentSearch": "Probeer een andere zoekterm"
+    },
+    "analytics": {
+        "description": "Volg prestatiemetrieken en optimaliseer je API-integraties",
+        "lastWeek": "Laatste 7 dagen",
+        "lastMonth": "Laatste 30 dagen",
+        "lastYear": "Laatste 12 maanden",
+        "filters": "Filters",
+        "export": "Exporteren",
+        "totalApiCalls": "Totaal API-aanroepen",
+        "avgResponseTime": "Gem. Responstijd",
+        "errorRate": "Foutpercentage",
+        "activeIntegrations": "Actieve Integraties",
+        "vsLastPeriod": "vs. vorige periode",
+        "apiCallsOverTime": "API-aanroepen in de Tijd",
+        "calls": "Aanroepen",
+        "errors": "Fouten",
+        "performanceMetrics": "Prestatiemetrieken",
+        "responseTime": "Responstijd (ms)",
+        "throughput": "Doorvoer (verzoeken/min)",
+        "integrationDistribution": "API-gebruik per Integratie",
+        "performanceTips": "Tips voor Prestatie-optimalisatie",
+        "tip1": "Groepeer API-verzoeken indien mogelijk om het aantal aanroepen te verminderen",
+        "tip2": "Implementeer snelheidsbeperking om API-beperkingen te voorkomen",
+        "tip3": "Cache veelgebruikte gegevens om responstijden te verbeteren",
+        "tip4": "Configureer webhooks in plaats van polling waar beschikbaar"
+    },
+    "users": {
+        "manageUsersDescription": "Beheer gebruikersaccounts en toegangsrechten",
+        "addUser": "Gebruiker Toevoegen",
+        "searchUsers": "Zoek gebruikers...",
+        "allUsers": "Alle Gebruikers",
+        "activeUsers": "Actief",
+        "pendingUsers": "In afwachting",
+        "inactiveUsers": "Inactief",
+        "name": "Naam",
+        "email": "E-mail",
+        "role": "Rol",
+        "status": "Status",
+        "lastLogin": "Laatste Login",
+        "actions": "Acties",
+        "edit": "Bewerken",
+        "delete": "Verwijderen",
+        "deleteUserTitle": "Gebruiker Verwijderen",
+        "deleteUserConfirmation": "Weet je zeker dat je {name} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+        "statusActive": "Actief",
+        "statusInactive": "Inactief",
+        "statusPending": "In afwachting",
+        "statusUnknown": "Onbekend",
+        "never": "Nooit",
+        "noResults": "Geen gebruikers gevonden",
+        "tryDifferentSearch": "Probeer een andere zoekterm of filter"
+    }
+}

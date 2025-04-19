@@ -7,7 +7,7 @@ import (
 	
 	"github.com/go-chi/chi/v5"
 	"github.com/zepzeper/tower/internal/api/dto"
-	"github.com/zepzeper/tower/internal/api/response"
+	"github.com/zepzeper/tower/internal/response"
 	"github.com/zepzeper/tower/internal/services"
 )
 

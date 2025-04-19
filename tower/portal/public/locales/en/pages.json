@@ -1,0 +1,224 @@
+{
+    "common": {
+        "loading": "Loading...",
+        "error": "An error occurred",
+        "success": "Success!",
+        "save": "Save",
+        "cancel": "Cancel",
+        "close": "Close",
+        "search": "Search...",
+        "submit": "Submit",
+        "back": "Back",
+        "next": "Next",
+        "or": "Or"
+    },
+    "navigation": {
+        "dashboard": "Dashboard",
+        "connections": "Connections",
+        "apiIntegrations": "API Integrations",
+        "analytics": "Analytics",
+        "users": "Users",
+        "settings": "Settings",
+        "general": "General",
+        "security": "Security",
+        "account": "Account",
+        "notifications": "Notifications",
+        "regional": "Regional",
+        "signOut": "Sign out"
+    },
+    "topBar": {
+        "search": "Search...",
+        "toggleDarkMode": "Toggle dark mode",
+        "notifications": "Notifications"
+    },
+    "sidebar": {
+        "logo": "Tower"
+    },
+    "settings": {
+        "title": "Settings",
+        "general": {
+            "title": "General Settings",
+            "appPreferences": "Application Preferences",
+            "appPreferencesDescription": "Manage your application-wide settings and preferences",
+            "appName": "Application Name",
+            "displayLanguage": "Default Display Language"
+        },
+        "security": {
+            "title": "Security Settings",
+            "authSecurity": "Authentication and Security",
+            "authSecurityDescription": "Manage your security preferences and authentication options",
+            "twoFactorAuth": "Two-Factor Authentication",
+            "twoFactorAuthDescription": "Add an extra layer of security to your account",
+            "changePassword": "Change Password"
+        },
+        "account": {
+            "title": "Account Settings",
+            "profileInfo": "Profile Information",
+            "profileInfoDescription": "Update your account details and personal information",
+            "fullName": "Full Name",
+            "emailAddress": "Email Address"
+        },
+        "notifications": {
+            "title": "Notification Settings",
+            "notificationPreferences": "Notification Preferences",
+            "notificationPreferencesDescription": "Configure how and when you receive notifications",
+            "emailNotifications": "Email Notifications",
+            "emailNotificationsDescription": "Receive email notifications for important events",
+            "browserNotifications": "Browser Notifications",
+            "browserNotificationsDescription": "Receive browser push notifications"
+        },
+        "regional": {
+            "title": "Regional Settings",
+            "locationFormat": "Location and Format Preferences",
+            "locationFormatDescription": "Configure regional settings and format preferences",
+            "timezone": "Timezone",
+            "dateFormat": "Date Format"
+        }
+    },
+    "auth": {
+        "login": {
+            "title": "Sign in to your account",
+            "createAccount": "create a new account",
+            "emailLabel": "Email address",
+            "passwordLabel": "Password",
+            "rememberMe": "Remember me",
+            "forgotPassword": "Forgot your password?",
+            "signIn": "Sign in",
+            "signingIn": "Signing in...",
+            "invalidCredentials": "Invalid email or password"
+        },
+        "register": {
+            "title": "Create your account",
+            "signInExisting": "sign in to existing account",
+            "nameLabel": "Full name",
+            "emailLabel": "Email address",
+            "passwordLabel": "Password",
+            "confirmPasswordLabel": "Confirm password",
+            "createAccount": "Create account",
+            "creatingAccount": "Creating account...",
+            "passwordMismatch": "Passwords do not match"
+        },
+        "forgotPassword": {
+            "title": "Reset your password",
+            "returnToSignIn": "return to sign in",
+            "emailLabel": "Email address",
+            "sendResetLink": "Send reset link",
+            "sending": "Sending...",
+            "resetLinkSent": "If an account exists with the email {email}, we've sent instructions to reset your password.",
+            "failedToSendReset": "Failed to send reset link. Please try again."
+        },
+        "resetPassword": {
+            "title": "Reset your password",
+            "enterNewPassword": "Enter your new password below",
+            "newPasswordLabel": "New password",
+            "confirmPasswordLabel": "Confirm password",
+            "resetPassword": "Reset password",
+            "resettingPassword": "Resetting password...",
+            "passwordResetSuccess": "Password reset successful",
+            "passwordResetDescription": "Your password has been reset successfully.",
+            "backToLogin": "Back to login",
+            "passwordMismatch": "Passwords do not match",
+            "passwordTooShort": "Password must be at least 8 characters long",
+            "invalidToken": "Invalid or missing reset token"
+        }
+    },
+    "dashboard": {
+        "overview": "Monitor your API connections and performance at a glance",
+        "activeConnections": "Active Connections",
+        "totalUsers": "Total Users",
+        "apiCalls": "API Calls (30d)",
+        "growth": "Monthly Growth",
+        "connectionActivity": "Connection Activity",
+        "recentActivity": "Recent Activity",
+        "eventType": "Event Type",
+        "connection": "Connection",
+        "timestamp": "Timestamp",
+        "status": "Status",
+        "apiRequest": "API Request",
+        "success": "Success",
+        "failed": "Failed"
+    },
+    "connections": {
+        "description": "Manage all your integrations",
+        "addNew": "Add Connection",
+        "searchPlaceholder": "Search connections...",
+        "statusActive": "Active",
+        "statusInactive": "Inactive",
+        "statusPending": "Pending",
+        "statusUnknown": "Unknown",
+        "lastSync": "Last Sync",
+        "never": "Never",
+        "configure": "Configure",
+        "viewData": "View Data",
+        "activate": "Activate",
+        "noResults": "No connections found",
+        "tryDifferentSearch": "Try a different search term"
+    },
+    "integrations": {
+        "title": "API Integrations",
+        "subtitle": "Connect TowerAPI with your favorite tools and services",
+        "searchPlaceholder": "🔍 Search integrations...",
+        "noResults": "No results found",
+        "tryDifferentSearch": "Try a different search term or category",
+        "connectButton": "Connect",
+        "popular": "Popular",
+        "categories": {
+            "allCategories": "All Categories",
+            "ecommerce": "E-commerce",
+            "crm": "CRM",
+            "finance": "Finance",
+            "marketing": "Marketing"
+        }
+    },
+    "analytics": {
+        "description": "Track performance metrics and optimize your API integrations",
+        "lastWeek": "Last 7 days",
+        "lastMonth": "Last 30 days",
+        "lastYear": "Last 12 months",
+        "filters": "Filters",
+        "export": "Export",
+        "totalApiCalls": "Total API Calls",
+        "avgResponseTime": "Avg. Response Time",
+        "errorRate": "Error Rate",
+        "activeIntegrations": "Active Integrations",
+        "vsLastPeriod": "vs. last period",
+        "apiCallsOverTime": "API Calls Over Time",
+        "calls": "Calls",
+        "errors": "Errors",
+        "performanceMetrics": "Performance Metrics",
+        "responseTime": "Response Time (ms)",
+        "throughput": "Throughput (req/min)",
+        "integrationDistribution": "API Usage by Integration",
+        "performanceTips": "Performance Optimization Tips",
+        "tip1": "Batch API requests when possible to reduce the number of calls",
+        "tip2": "Implement rate limiting to avoid API throttling",
+        "tip3": "Cache frequently accessed data to improve response times",
+        "tip4": "Configure webhooks instead of polling where available"
+    },
+    "users": {
+        "manageUsersDescription": "Manage user accounts and access permissions",
+        "addUser": "Add User",
+        "searchUsers": "Search users...",
+        "allUsers": "All Users",
+        "activeUsers": "Active",
+        "pendingUsers": "Pending",
+        "inactiveUsers": "Inactive",
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "status": "Status",
+        "lastLogin": "Last Login",
+        "actions": "Actions",
+        "edit": "Edit",
+        "delete": "Delete",
+        "deleteUserTitle": "Delete User",
+        "deleteUserConfirmation": "Are you sure you want to delete {name}? This action cannot be undone.",
+        "statusActive": "Active",
+        "statusInactive": "Inactive",
+        "statusPending": "Pending",
+        "statusUnknown": "Unknown",
+        "never": "Never",
+        "noResults": "No users found",
+        "tryDifferentSearch": "Try a different search term or filter"
+    }
+}

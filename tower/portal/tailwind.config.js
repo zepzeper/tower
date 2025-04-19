@@ -1,8 +1,11 @@
-module.exports = {
+const withMT = require("@material-tailwind/react/utils/withMT");
+ 
+module.exports = withMT({
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class', // Enable class-based dark mode
   theme: {
     extend: {
       colors: {
@@ -36,4 +39,4 @@ module.exports = {
   plugins: [
     require('@tailwindcss/postcss')
   ],
-}
+})

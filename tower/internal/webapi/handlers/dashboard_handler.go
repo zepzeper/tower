@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/zepzeper/tower/internal/api/response"
+	"github.com/zepzeper/tower/internal/response"
 	"github.com/zepzeper/tower/internal/services"
 	"github.com/zepzeper/tower/internal/webapi/dto"
 )

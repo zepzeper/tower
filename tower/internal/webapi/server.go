@@ -14,6 +14,7 @@ type Server struct {
 	connectorService  *services.ConnectorService
 	transformerService *services.TransformerService
 	connectionService *services.ConnectionService
+  authService       *services.AuthService
 }
 
 // NewServer creates a new WebAPI server
@@ -21,6 +22,7 @@ func NewServer(
 	connectorService *services.ConnectorService,
 	transformerService *services.TransformerService,
 	connectionService *services.ConnectionService,
+	authService *services.AuthService,
 ) *Server {
 	r := chi.NewRouter()
 
@@ -35,6 +37,7 @@ func NewServer(
 		connectorService:  connectorService,
 		transformerService: transformerService,
 		connectionService: connectionService,
+    authService:       authService,  // Store the auth service
 	}
 
 	// Create handler registry
@@ -42,6 +45,7 @@ func NewServer(
 		connectorService,
 		transformerService,
 		connectionService,
+    authService,
 	)
 
 	// Setup routes

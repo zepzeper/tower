@@ -1,18 +1,22 @@
-// dashboard/src/components/Layout.jsx
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import Topbar from './Topbar';
+import TopBar from './TopBar';
+import { useTheme } from '../context/ThemeContext';
 
-const Layout = () => (
-  <div className="flex h-screen">
-    <Sidebar />
-    <div className="flex flex-col flex-1 overflow-hidden">
-      <Topbar />
-      <main className="flex-1 overflow-auto bg-gray-50 p-4">
-        <Outlet />
-      </main>
+const Layout = () => {
+  const { theme } = useTheme();
+
+  return (
+    <div className={`flex h-screen ${theme === 'light' ? 'bg-gray-50' : 'bg-gray-950'}`}>
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <TopBar />
+        <main className={`flex-1 overflow-y-auto p-6 ${theme === 'light' ? 'bg-gray-50' : 'bg-gray-950'}`}>
+          <Outlet />
+        </main>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default Layout;

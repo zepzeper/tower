@@ -6,5 +6,6 @@ func AllSchemas() []string {
     TransformersTableSchema,  
 		ConnectionsTableSchema,      
 		ExecutionsTableSchema,    
+    UsersTableSchema,
 	}
 }
