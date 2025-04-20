@@ -33,25 +33,25 @@ func (a *APIKeyAuth) Authenticate(req *http.Request) error {
 		if a.config.KeyName != "" && a.config.PublicKey != "" {
 			req.Header.Set(a.config.KeyName, a.config.PublicKey)
 		}
-		
+
 		if a.config.SecretName != "" && a.config.PrivateKey != "" {
 			req.Header.Set(a.config.SecretName, a.config.PrivateKey)
 		}
 	} else {
 		// Use query parameter-based authentication
 		q := req.URL.Query()
-		
+
 		if a.config.KeyName != "" && a.config.PublicKey != "" {
 			q.Add(a.config.KeyName, a.config.PublicKey)
 		}
-		
+
 		if a.config.SecretName != "" && a.config.PrivateKey != "" {
 			q.Add(a.config.SecretName, a.config.PrivateKey)
 		}
-		
+
 		req.URL.RawQuery = q.Encode()
 	}
-	
+
 	return nil
 }
 

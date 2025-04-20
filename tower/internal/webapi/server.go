@@ -11,9 +11,9 @@ import (
 
 // Server represents the internal API server for the web UI
 type Server struct {
-	router            *chi.Mux
-	handlers          *handlers.Registry
-  authService       *services.AuthService
+	router      *chi.Mux
+	handlers    *handlers.Registry
+	authService *services.AuthService
 }
 
 // NewServer creates a new WebAPI server
@@ -31,15 +31,15 @@ func NewServer(
 
 	// Create server
 	server := &Server{
-		router:            r,
-    authService:       authService,  // Store the auth service
+		router:      r,
+		authService: authService, // Store the auth service
 	}
 
 	// Create handler registry
 	server.handlers = handlers.NewRegistry(
-    authService,
-    mappingService,
-    connectionService,
+		authService,
+		mappingService,
+		connectionService,
 	)
 
 	// Setup routes

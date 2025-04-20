@@ -1,12 +1,12 @@
 package mapping
 
 import (
-	"fmt"
-	"strconv"
-	"strings"
 	"encoding/json"
+	"fmt"
 	"log"
 	"reflect"
+	"strconv"
+	"strings"
 )
 
 // Transformer provides transformation functions for mapping operations
@@ -206,7 +206,7 @@ func (t *Transformer) ExtractValueFromPath(data map[string]interface{}, path str
 		// Handle array access using bracket notation [index]
 		if strings.Contains(part, "[") && strings.Contains(part, "]") {
 			beforeBracket := part[:strings.Index(part, "[")]
-			
+
 			// Handle object access into array element
 			if c, ok := current.(map[string]interface{}); ok {
 				if arr, ok := c[beforeBracket].([]interface{}); ok && len(arr) > 0 {
@@ -215,7 +215,7 @@ func (t *Transformer) ExtractValueFromPath(data map[string]interface{}, path str
 					continue
 				}
 			}
-			
+
 			// If we can't properly handle the array access, just continue with nil
 			return nil, fmt.Errorf("couldn't access array at path %s", path)
 		}
@@ -344,7 +344,7 @@ func (t *Transformer) adaptToTargetType(value interface{}, targetType string) in
 				}
 			}
 		}
-		
+
 		// If value is an image object, extract URL
 		if obj, ok := value.(map[string]interface{}); ok {
 			for _, field := range []string{"src", "url", "link", "href"} {
@@ -353,32 +353,32 @@ func (t *Transformer) adaptToTargetType(value interface{}, targetType string) in
 				}
 			}
 		}
-		
+
 		// For other types, convert to string
 		if !isString(value) {
 			return fmt.Sprintf("%v", value)
 		}
-		
+
 	case "number", "float":
 		return convertToNumber(value)
-		
+
 	case "integer", "int":
 		num := convertToNumber(value)
 		if f, ok := num.(float64); ok {
 			return int(f)
 		}
 		return num
-		
+
 	case "boolean", "bool":
 		return convertToBoolean(value)
-		
+
 	case "array":
 		// If it's not already an array, wrap in array
 		if _, ok := value.([]interface{}); !ok {
 			return []interface{}{value}
 		}
 	}
-	
+
 	return value
 }
 
@@ -445,7 +445,7 @@ func (t *Transformer) TransformFields(sourceData map[string]interface{}, targetS
 		if targetName == "" {
 			continue
 		}
-		
+
 		targetType := targetTypes[targetName]
 
 		// Apply transformation with target type awareness
@@ -461,7 +461,7 @@ func (t *Transformer) TransformFields(sourceData map[string]interface{}, targetS
 // extractTargetFieldTypes extracts field types from a target schema
 func (t *Transformer) extractTargetFieldTypes(schema map[string]interface{}) map[string]string {
 	types := make(map[string]string)
-	
+
 	// Recursively process all fields
 	var processObject func(obj map[string]interface{}, prefix string)
 	processObject = func(obj map[string]interface{}, prefix string) {
@@ -470,7 +470,7 @@ func (t *Transformer) extractTargetFieldTypes(schema map[string]interface{}) map
 			if prefix != "" {
 				path = prefix + "." + key
 			}
-			
+
 			// If it's a string, it might be a type definition
 			if typeStr, ok := value.(string); ok {
 				types[key] = typeStr
@@ -480,7 +480,7 @@ func (t *Transformer) extractTargetFieldTypes(schema map[string]interface{}) map
 			}
 		}
 	}
-	
+
 	processObject(schema, "")
 	return types
 }

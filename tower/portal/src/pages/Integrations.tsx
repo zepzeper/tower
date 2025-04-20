@@ -1,21 +1,19 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
-import { Search, ShoppingCart, Users, CreditCard, Mail, Database } from 'lucide-react';
-
-interface Category {
-  id: string;
-  name: string;
-  icon?: React.ElementType;
-}
+import { Search, Database } from 'lucide-react';
+import ConnectionModal from '../components/pages/connections/ConnectionModal';
+import { connectionService } from '../services/connectionService';
 
 interface Integration {
-  id: number;
+  id: string;
   name: string;
   description: string;
   category: string;
+  categoryName: string;
   popular: boolean;
-  logo: string; // Emoji or string symbol
+  imageUrl: string;
+  type: string;
 }
 
 const Integrations: React.FC = () => {
@@ -23,29 +21,57 @@ const Integrations: React.FC = () => {
   const { theme } = useTheme();
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
+  const [integrations, setIntegrations] = useState<Integration[]>([]);
+  const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const categories: Category[] = [
-    { id: 'all', name: t('integrations.categories.allCategories') },
-    { id: 'ecommerce', name: t('integrations.categories.ecommerce'), icon: ShoppingCart },
-    { id: 'crm', name: t('integrations.categories.crm'), icon: Users },
-    { id: 'finance', name: t('integrations.categories.finance'), icon: CreditCard },
-    { id: 'marketing', name: t('integrations.categories.marketing'), icon: Mail },
-  ];
+  // Load connection types on component mount
+  useEffect(() => {
+    const loadConnectionTypes = async () => {
+      try {
+        const types = await connectionService.getConnectionTypesFromFile();
+        const transformed = types.map(type => ({
+          id: type.id,
+          name: type.name,
+          description: type.description,
+          category: type.category || 'other',
+          categoryName: type.categoryName || 'Other',
+          popular: type.popular || false,
+          imageUrl: type.imageUrl || getDefaultImageUrl(type.id),
+          type: type.id
+        }));
 
-  const integrations: Integration[] = [
-    { id: 1, name: 'Shopify', description: 'Connect your online store', category: 'ecommerce', popular: true, logo: '🛒' },
-    { id: 2, name: 'HubSpot', description: 'Customer relationship management', category: 'crm', popular: true, logo: '🤝' },
-    { id: 3, name: 'Mailchimp', description: 'Email marketing platform', category: 'marketing', popular: true, logo: '📧' },
-    { id: 4, name: 'Stripe', description: 'Online payment processing', category: 'finance', popular: true, logo: '💳' },
-    { id: 5, name: 'WooCommerce', description: 'WordPress eCommerce plugin', category: 'ecommerce', popular: false, logo: '🛍️' },
-    { id: 6, name: 'Salesforce', description: 'Customer success platform', category: 'crm', popular: true, logo: '☁️' },
-    { id: 7, name: 'QuickBooks', description: 'Accounting software', category: 'finance', popular: false, logo: '📊' },
-    { id: 8, name: 'Google Analytics', description: 'Web analytics service', category: 'marketing', popular: true, logo: '📈' },
-    { id: 9, name: 'PayPal', description: 'Online payment system', category: 'finance', popular: true, logo: '💵' },
-    { id: 10, name: 'Magento', description: 'E-commerce platform', category: 'ecommerce', popular: false, logo: '🏪' },
-    { id: 11, name: 'Zendesk', description: 'Customer service platform', category: 'crm', popular: false, logo: '🎧' },
-    { id: 12, name: 'Mailerlite', description: 'Email marketing tool', category: 'marketing', popular: false, logo: '📨' },
-  ];
+        setIntegrations(transformed);
+
+        // Generate categories from unique category values
+        const uniqueCategoryIds = Array.from(
+          new Set(types.map(t => t.category || 'other'))
+        );
+
+        // Then map to category objects
+        const uniqueCategories = uniqueCategoryIds.map(categoryId => ({
+          id: categoryId,
+          name: types.find(t => t.category === categoryId)?.categoryName ||
+            categoryId.charAt(0).toUpperCase() + categoryId.slice(1) // Default name if not found
+        }));
+
+        setCategories([{ id: 'all', name: t('integrations.categories.allCategories') }, ...uniqueCategories]);
+      } catch (error) {
+        console.error('Failed to load connection types:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadConnectionTypes();
+  }, [t]);
+
+  const getDefaultImageUrl = (typeId: string): string => {
+    // Fallback to default image if none provided
+    return `/images/integrations/${typeId}.png`;
+  };
 
   const filteredIntegrations = integrations.filter((integration) => {
     const matchesSearch = integration.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -53,6 +79,29 @@ const Integrations: React.FC = () => {
     const matchesCategory = activeCategory === 'all' || integration.category === activeCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const handleConnectClick = (integration: Integration) => {
+    setSelectedIntegration(integration);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedIntegration(null);
+  };
+
+  const handleConnectionSuccess = () => {
+    setIsModalOpen(false);
+    setSelectedIntegration(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Database className="animate-spin" size={32} />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -76,30 +125,27 @@ const Integrations: React.FC = () => {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className={`block w-full pl-10 pr-3 py-2 border rounded-md ${
-                theme === 'dark'
-                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-green-500 focus:ring-green-500'
-                  : 'border-gray-300 placeholder-gray-500 focus:border-green-500 focus:ring-green-500'
-              }`}
+              className={`block w-full pl-10 pr-3 py-2 border rounded-md ${theme === 'dark'
+                ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-green-500 focus:ring-green-500'
+                : 'border-gray-300 placeholder-gray-500 focus:border-green-500 focus:ring-green-500'
+                }`}
               placeholder={t('integrations.searchPlaceholder')}
             />
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {categories.map(({ id, name, icon: Icon }) => (
+            {categories.map((category) => (
               <button
-                key={id}
-                onClick={() => setActiveCategory(id)}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center ${
-                  activeCategory === id
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:bg-opacity-30 dark:text-green-300'
-                    : theme === 'dark'
-                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                key={category.id}
+                onClick={() => setActiveCategory(category.id)}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md ${activeCategory === category.id
+                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:bg-opacity-30 dark:text-green-300'
+                  : theme === 'dark'
+                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
               >
-                {Icon && <Icon size={16} className="mr-1.5" />}
-                {name}
+                {category.name}
               </button>
             ))}
           </div>
@@ -113,12 +159,19 @@ const Integrations: React.FC = () => {
             key={integration.id}
             className={`p-6 rounded-lg shadow-md ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}
           >
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center text-2xl rounded-lg bg-gray-100 dark:bg-gray-700">
-                {integration.logo}
+            <div className="flex flex-col items-center">
+              <div className="w-20 h-20 mb-4 flex items-center justify-center">
+                <img
+                  src={integration.imageUrl}
+                  alt={integration.name}
+                  className="max-w-full max-h-full object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = getDefaultImageUrl(integration.id);
+                  }}
+                />
               </div>
-              <div>
-                <div className="flex items-center">
+              <div className="text-center">
+                <div className="flex items-center justify-center">
                   <h3 className={`text-lg font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                     {integration.name}
                   </h3>
@@ -131,11 +184,17 @@ const Integrations: React.FC = () => {
                 <p className={`mt-1 text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                   {integration.description}
                 </p>
+                <div className="mt-2">
+                  <span className={`text-xs px-2 py-1 rounded ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
+                    {integration.categoryName}
+                  </span>
+                </div>
               </div>
             </div>
 
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <button
+                onClick={() => handleConnectClick(integration)}
                 className="w-full px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
               >
                 {t('integrations.connectButton')}
@@ -145,12 +204,22 @@ const Integrations: React.FC = () => {
         ))}
       </div>
 
-      {filteredIntegrations.length === 0 && (
+      {filteredIntegrations.length === 0 && !loading && (
         <div className={`text-center py-12 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
           <Database size={48} className="mx-auto mb-4" />
           <p className="text-lg font-medium">{t('integrations.noResults')}</p>
           <p className="mt-1">{t('integrations.tryDifferentSearch')}</p>
         </div>
+      )}
+
+      {/* Connection Modal */}
+      {selectedIntegration && (
+        <ConnectionModal
+          isOpen={isModalOpen}
+          connectionType={selectedIntegration.type}
+          onClose={handleModalClose}
+          onSuccess={handleConnectionSuccess}
+        />
       )}
     </div>
   );

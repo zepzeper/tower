@@ -1,0 +1,39 @@
+[
+  {
+    "id": "woocommerce",
+    "name": "WooCommerce",
+    "description": "Connect to a WooCommerce store",
+    "category": "ecommerce",
+    "categoryName": "E-commerce",
+    "popular": true,
+    "imageUrl": "/images/integrations/woocommerce.png",
+    "authType": "api_key",
+    "configTemplate": [
+      {
+        "key": "url",
+        "name": "Store URL",
+        "description": "The URL of your WooCommerce store",
+        "type": "string",
+        "required": true
+      },
+      {
+        "key": "key",
+        "name": "Public key",
+        "description": "The public key of your WooCommerce store",
+        "type": "string",
+        "required": true
+      }
+    ]
+  },
+  {
+    "id": "shopify",
+    "name": "Shopify",
+    "description": "Connect to a Shopify store",
+    "category": "ecommerce",
+    "categoryName": "E-commerce",
+    "popular": true,
+    "imageUrl": "/images/integrations/shopify.png",
+    "authType": "oauth2",
+    "configTemplate": []
+  }
+]

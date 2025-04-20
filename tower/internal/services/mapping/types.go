@@ -53,4 +53,3 @@ type schemaTransformOptions struct {
 	Prefix          string
 	IncludeRequired bool
 }
-

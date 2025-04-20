@@ -6,11 +6,11 @@ import (
 
 // Factory provides access to all repository instances
 type Factory struct {
-	db                *sql.DB
-	transformerRepo   *TransformerRepository
-	connectionRepo    *ConnectionRepository
-	executionRepo     *ExecutionRepository
-	authRepo          *AuthRepository
+	db              *sql.DB
+	transformerRepo *TransformerRepository
+	connectionRepo  *APIConnectionRepository
+	executionRepo   *ExecutionRepository
+	authRepo        *AuthRepository
 }
 
 // NewFactory creates a new repository factory
@@ -29,9 +29,9 @@ func (f *Factory) Transformer() *TransformerRepository {
 }
 
 // Connection returns a connection repository
-func (f *Factory) Connection() *ConnectionRepository {
+func (f *Factory) Connection() *APIConnectionRepository {
 	if f.connectionRepo == nil {
-		f.connectionRepo = NewConnectionRepository(f.db)
+		f.connectionRepo = NewAPIConnectionRepository(f.db)
 	}
 	return f.connectionRepo
 }

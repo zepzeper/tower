@@ -13,7 +13,6 @@ import (
 	"github.com/zepzeper/tower/internal/config"
 	"github.com/zepzeper/tower/internal/core/registry"
 	"github.com/zepzeper/tower/internal/database"
-	"github.com/zepzeper/tower/internal/database/repositories"
 	"github.com/zepzeper/tower/internal/server"
 	"github.com/zepzeper/tower/internal/services"
 	"github.com/zepzeper/tower/internal/services/connection"
@@ -39,23 +38,23 @@ func main() {
 		log.Fatalf("Failed to migrate database schema: %v", err)
 	}
 
-  cwd, err := os.Getwd()
-  if err != nil {
-    log.Fatal(err)
-  }
-  schemaPath := filepath.Join(cwd, "internal/core/schemas")
-  schemaFetcher := registry.NewSchemaFetcher(schemaPath)
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	schemaPath := filepath.Join(cwd, "internal/core/static/")
+	schemaFetcher := registry.NewSchemaFetcher(schemaPath)
 
 	// Create service layer
-  authService := services.NewAuthService("123", 24*time.Hour, dbManager);
-  connectionService := connection.NewService(dbManager)
-  mappingService := mapping.NewService(schemaFetcher, dbManager)
+	authService := services.NewAuthService("123", 24*time.Hour, dbManager)
+	connectionService := connection.NewService(dbManager)
+	mappingService := mapping.NewService(schemaFetcher, dbManager)
 
 	// Create central server
 	server := server.NewServer(
-    authService,
-    mappingService,
-    connectionService,
+		authService,
+		mappingService,
+		connectionService,
 	)
 
 	// // Initialize job manager with existing connections

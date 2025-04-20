@@ -10,7 +10,7 @@ import (
 )
 
 type MappingHandler struct {
-    mappingService *mapping.Service
+	mappingService *mapping.Service
 }
 
 func NewMappingHandler(mappingService *mapping.Service) *MappingHandler {
@@ -28,7 +28,7 @@ func (h *MappingHandler) Fetch(w http.ResponseWriter, r *http.Request) {
 
 	source := r.URL.Query().Get("source")
 	target := r.URL.Query().Get("target")
-  operation := r.URL.Query().Get("operation")
+	operation := r.URL.Query().Get("operation")
 
 	if source == "" || target == "" || operation == "" {
 		response.Error(w, "Missing 'source' or 'target' query parameters", http.StatusBadRequest)
@@ -53,14 +53,14 @@ func (h *MappingHandler) HandleTestMapping(w http.ResponseWriter, r *http.Reques
 		http.Error(w, fmt.Sprintf("Failed to parse request body: %v", err), http.StatusBadRequest)
 		return
 	}
-	
+
 	// Apply transformations based on mappings
 	response, err := h.mappingService.ApplyMappings(req)
-  if err != nil {
+	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to apply mappings: %v", err), http.StatusBadRequest)
 		return
-  }
-	
+	}
+
 	// Send response
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(response); err != nil {

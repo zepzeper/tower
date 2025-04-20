@@ -17,10 +17,10 @@ import (
 
 // Server is the central server wrapper that manages both API and WebAPI
 type Server struct {
-	router            *chi.Mux
-	api               *api.Server
-	webapi            *webapi.Server
-	httpServer        *http.Server
+	router     *chi.Mux
+	api        *api.Server
+	webapi     *webapi.Server
+	httpServer *http.Server
 }
 
 // NewServer creates a new central server with both API and WebAPI
@@ -33,14 +33,13 @@ func NewServer(
 	router := chi.NewRouter()
 
 	// Create API server (external API)
-	apiServer := api.NewServer(
-	)
+	apiServer := api.NewServer()
 
 	// Create WebAPI server (internal API for web UI)
 	webapiServer := webapi.NewServer(
-    authService,
-    mappingService,
-    connectionService,
+		authService,
+		mappingService,
+		connectionService,
 	)
 
 	// Create central server
@@ -67,7 +66,7 @@ func (s *Server) setupRoutes() {
 	// Host-based routing
 	s.router.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 		host := r.Host
-		
+
 		// Check if this is the portal subdomain
 		if strings.HasPrefix(host, "portal.") {
 			// Serve dashboard application
@@ -75,7 +74,7 @@ func (s *Server) setupRoutes() {
 			dashboardFileServer.ServeHTTP(w, r)
 			return
 		}
-		
+
 		// Serve main application
 		frontendFileServer := http.FileServer(http.Dir("./web/dist"))
 		frontendFileServer.ServeHTTP(w, r)

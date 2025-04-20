@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import React from 'react';
+import { JSX, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
@@ -46,11 +47,10 @@ const Settings: React.FC<SettingsProps> = ({ section = null }) => {
                     </label>
                     <input
                       type="text"
-                      className={`mt-1 block w-full rounded-md shadow-sm ${
-                        theme === 'dark'
-                          ? 'bg-gray-700 border-gray-600 text-white focus:ring-green-500 focus:border-green-500'
-                          : 'border-gray-300 focus:ring-green-500 focus:border-green-500'
-                      }`}
+                      className={`mt-1 block w-full rounded-md shadow-sm ${theme === 'dark'
+                        ? 'bg-gray-700 border-gray-600 text-white focus:ring-green-500 focus:border-green-500'
+                        : 'border-gray-300 focus:ring-green-500 focus:border-green-500'
+                        }`}
                       defaultValue={t('sidebar.logo') + 'API'}
                     />
                   </div>
@@ -60,11 +60,10 @@ const Settings: React.FC<SettingsProps> = ({ section = null }) => {
                       {t('settings.general.displayLanguage')}
                     </label>
                     <select
-                      className={`mt-1 block w-full rounded-md shadow-sm ${
-                        theme === 'dark'
-                          ? 'bg-gray-700 border-gray-600 text-white focus:ring-green-500 focus:border-green-500'
-                          : 'border-gray-300 focus:ring-green-500 focus:border-green-500'
-                      }`}
+                      className={`mt-1 block w-full rounded-md shadow-sm ${theme === 'dark'
+                        ? 'bg-gray-700 border-gray-600 text-white focus:ring-green-500 focus:border-green-500'
+                        : 'border-gray-300 focus:ring-green-500 focus:border-green-500'
+                        }`}
                     >
                       <option>English</option>
                       <option>Nederlands</option>
@@ -146,11 +145,10 @@ const Settings: React.FC<SettingsProps> = ({ section = null }) => {
                     </label>
                     <input
                       type="text"
-                      className={`mt-1 block w-full rounded-md shadow-sm ${
-                        theme === 'dark'
-                          ? 'bg-gray-700 border-gray-600 text-white focus:ring-green-500 focus:border-green-500'
-                          : 'border-gray-300 focus:ring-green-500 focus:border-green-500'
-                      }`}
+                      className={`mt-1 block w-full rounded-md shadow-sm ${theme === 'dark'
+                        ? 'bg-gray-700 border-gray-600 text-white focus:ring-green-500 focus:border-green-500'
+                        : 'border-gray-300 focus:ring-green-500 focus:border-green-500'
+                        }`}
                       defaultValue={t('sidebar.admin')}
                     />
                   </div>
@@ -161,11 +159,10 @@ const Settings: React.FC<SettingsProps> = ({ section = null }) => {
                     </label>
                     <input
                       type="email"
-                      className={`mt-1 block w-full rounded-md shadow-sm ${
-                        theme === 'dark'
-                          ? 'bg-gray-700 border-gray-600 text-white focus:ring-green-500 focus:border-green-500'
-                          : 'border-gray-300 focus:ring-green-500 focus:border-green-500'
-                      }`}
+                      className={`mt-1 block w-full rounded-md shadow-sm ${theme === 'dark'
+                        ? 'bg-gray-700 border-gray-600 text-white focus:ring-green-500 focus:border-green-500'
+                        : 'border-gray-300 focus:ring-green-500 focus:border-green-500'
+                        }`}
                       defaultValue={t('sidebar.adminEmail')}
                     />
                   </div>
@@ -253,11 +250,10 @@ const Settings: React.FC<SettingsProps> = ({ section = null }) => {
                       {t('settings.regional.timezone')}
                     </label>
                     <select
-                      className={`mt-1 block w-full rounded-md shadow-sm ${
-                        theme === 'dark'
-                          ? 'bg-gray-700 border-gray-600 text-white focus:ring-green-500 focus:border-green-500'
-                          : 'border-gray-300 focus:ring-green-500 focus:border-green-500'
-                      }`}
+                      className={`mt-1 block w-full rounded-md shadow-sm ${theme === 'dark'
+                        ? 'bg-gray-700 border-gray-600 text-white focus:ring-green-500 focus:border-green-500'
+                        : 'border-gray-300 focus:ring-green-500 focus:border-green-500'
+                        }`}
                     >
                       <option>UTC (Coordinated Universal Time)</option>
                       <option>America/New_York (Eastern Time)</option>
@@ -273,11 +269,10 @@ const Settings: React.FC<SettingsProps> = ({ section = null }) => {
                       {t('settings.regional.dateFormat')}
                     </label>
                     <select
-                      className={`mt-1 block w-full rounded-md shadow-sm ${
-                        theme === 'dark'
-                          ? 'bg-gray-700 border-gray-600 text-white focus:ring-green-500 focus:border-green-500'
-                          : 'border-gray-300 focus:ring-green-500 focus:border-green-500'
-                      }`}
+                      className={`mt-1 block w-full rounded-md shadow-sm ${theme === 'dark'
+                        ? 'bg-gray-700 border-gray-600 text-white focus:ring-green-500 focus:border-green-500'
+                        : 'border-gray-300 focus:ring-green-500 focus:border-green-500'
+                        }`}
                     >
                       <option>MM/DD/YYYY</option>
                       <option>DD/MM/YYYY</option>

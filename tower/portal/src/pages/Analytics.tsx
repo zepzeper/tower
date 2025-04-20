@@ -1,9 +1,10 @@
+import React from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
-import { 
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
+import {
+  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import { Calendar, Filter, Download, ArrowDown, ArrowUp } from 'lucide-react';
 
@@ -67,36 +68,36 @@ const Analytics: React.FC = () => {
   ];
 
   const stats: Stat[] = [
-    { 
-      id: 1, 
-      title: t('analytics.totalApiCalls'), 
-      value: '52,543', 
-      change: '+12.3%', 
+    {
+      id: 1,
+      title: t('analytics.totalApiCalls'),
+      value: '52,543',
+      change: '+12.3%',
       trend: 'up',
       changeText: t('analytics.vsLastPeriod')
     },
-    { 
-      id: 2, 
-      title: t('analytics.avgResponseTime'), 
-      value: '118ms', 
-      change: '-8.1%', 
+    {
+      id: 2,
+      title: t('analytics.avgResponseTime'),
+      value: '118ms',
+      change: '-8.1%',
       trend: 'down',
       changeText: t('analytics.vsLastPeriod')
     },
-    { 
-      id: 3, 
-      title: t('analytics.errorRate'), 
-      value: '4.2%', 
-      change: '+0.8%', 
+    {
+      id: 3,
+      title: t('analytics.errorRate'),
+      value: '4.2%',
+      change: '+0.8%',
       trend: 'up',
       changeText: t('analytics.vsLastPeriod'),
       bad: true
     },
-    { 
-      id: 4, 
-      title: t('analytics.activeIntegrations'), 
-      value: '8', 
-      change: '+2', 
+    {
+      id: 4,
+      title: t('analytics.activeIntegrations'),
+      value: '8',
+      change: '+2',
       trend: 'up',
       changeText: t('analytics.vsLastPeriod')
     }
@@ -114,23 +115,20 @@ const Analytics: React.FC = () => {
           </p>
         </div>
         <div className="mt-4 sm:mt-0 flex space-x-3">
-          <button className={`flex items-center px-3 py-1.5 rounded border ${
-            theme === 'dark' ? 'border-gray-600 bg-gray-700 text-gray-200' : 'border-gray-300 bg-white text-gray-700'
-          }`}>
+          <button className={`flex items-center px-3 py-1.5 rounded border ${theme === 'dark' ? 'border-gray-600 bg-gray-700 text-gray-200' : 'border-gray-300 bg-white text-gray-700'
+            }`}>
             <Calendar size={16} className="mr-2" />
             {timeRange === 'week' && t('analytics.lastWeek')}
             {timeRange === 'month' && t('analytics.lastMonth')}
             {timeRange === 'year' && t('analytics.lastYear')}
           </button>
-          <button className={`flex items-center px-3 py-1.5 rounded border ${
-            theme === 'dark' ? 'border-gray-600 bg-gray-700 text-gray-200' : 'border-gray-300 bg-white text-gray-700'
-          }`}>
+          <button className={`flex items-center px-3 py-1.5 rounded border ${theme === 'dark' ? 'border-gray-600 bg-gray-700 text-gray-200' : 'border-gray-300 bg-white text-gray-700'
+            }`}>
             <Filter size={16} className="mr-2" />
             {t('analytics.filters')}
           </button>
-          <button className={`flex items-center px-3 py-1.5 rounded border ${
-            theme === 'dark' ? 'border-gray-600 bg-gray-700 text-gray-200' : 'border-gray-300 bg-white text-gray-700'
-          }`}>
+          <button className={`flex items-center px-3 py-1.5 rounded border ${theme === 'dark' ? 'border-gray-600 bg-gray-700 text-gray-200' : 'border-gray-300 bg-white text-gray-700'
+            }`}>
             <Download size={16} className="mr-2" />
             {t('analytics.export')}
           </button>
@@ -140,8 +138,8 @@ const Analytics: React.FC = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat) => (
-          <div 
-            key={stat.id} 
+          <div
+            key={stat.id}
             className={`p-6 rounded-lg shadow-md ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}
           >
             <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>
@@ -157,7 +155,7 @@ const Analytics: React.FC = () => {
                 <ArrowDown size={16} className={stat.bad ? 'text-green-500 mr-1' : 'text-red-500 mr-1'} />
               )}
               <span className={
-                stat.trend === 'up' 
+                stat.trend === 'up'
                   ? stat.bad ? 'text-red-500 text-sm' : 'text-green-500 text-sm'
                   : stat.bad ? 'text-green-500 text-sm' : 'text-red-500 text-sm'
               }>
@@ -183,19 +181,19 @@ const Analytics: React.FC = () => {
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" className={theme === 'dark' ? 'stroke-gray-700' : 'stroke-gray-200'} />
-              <XAxis 
-                dataKey="name" 
-                className={theme === 'dark' ? 'fill-gray-400' : 'fill-gray-600'} 
+              <XAxis
+                dataKey="name"
+                className={theme === 'dark' ? 'fill-gray-400' : 'fill-gray-600'}
               />
-              <YAxis 
-                className={theme === 'dark' ? 'fill-gray-400' : 'fill-gray-600'} 
+              <YAxis
+                className={theme === 'dark' ? 'fill-gray-400' : 'fill-gray-600'}
               />
-              <Tooltip 
-                contentStyle={{ 
+              <Tooltip
+                contentStyle={{
                   backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
                   color: theme === 'dark' ? '#f3f4f6' : '#1f2937',
                   border: theme === 'dark' ? '1px solid #374151' : '1px solid #e5e7eb'
-                }} 
+                }}
               />
               <Legend />
               <Line type="monotone" dataKey="calls" stroke="#10b981" strokeWidth={2} activeDot={{ r: 8 }} name={t('analytics.calls')} />
@@ -219,28 +217,28 @@ const Analytics: React.FC = () => {
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" className={theme === 'dark' ? 'stroke-gray-700' : 'stroke-gray-200'} />
-                <XAxis 
-                  dataKey="name" 
-                  className={theme === 'dark' ? 'fill-gray-400' : 'fill-gray-600'} 
+                <XAxis
+                  dataKey="name"
+                  className={theme === 'dark' ? 'fill-gray-400' : 'fill-gray-600'}
                 />
-                <YAxis 
+                <YAxis
                   yAxisId="left"
                   orientation="left"
                   stroke="#10b981"
                   className={theme === 'dark' ? 'fill-gray-400' : 'fill-gray-600'}
                 />
-                <YAxis 
+                <YAxis
                   yAxisId="right"
                   orientation="right"
                   stroke="#3b82f6"
                   className={theme === 'dark' ? 'fill-gray-400' : 'fill-gray-600'}
                 />
-                <Tooltip 
-                  contentStyle={{ 
+                <Tooltip
+                  contentStyle={{
                     backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
                     color: theme === 'dark' ? '#f3f4f6' : '#1f2937',
                     border: theme === 'dark' ? '1px solid #374151' : '1px solid #e5e7eb'
-                  }} 
+                  }}
                 />
                 <Legend />
                 <Bar yAxisId="left" dataKey="responseTime" fill="#10b981" name={t('analytics.responseTime')} />
@@ -273,12 +271,12 @@ const Analytics: React.FC = () => {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip 
-                  contentStyle={{ 
+                <Tooltip
+                  contentStyle={{
                     backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
                     color: theme === 'dark' ? '#f3f4f6' : '#1f2937',
                     border: theme === 'dark' ? '1px solid #374151' : '1px solid #e5e7eb'
-                  }} 
+                  }}
                 />
                 <Legend />
               </PieChart>

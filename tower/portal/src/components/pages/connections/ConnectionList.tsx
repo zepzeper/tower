@@ -1,26 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../context/ThemeContext';
-import { Edit, Trash2, Loader, MoreVertical, ExternalLink, Power, PowerOff, Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { ApiConnection } from '../services/connectionService';
+import { useTheme } from '../../../context/ThemeContext';
+import { Edit, Trash2, Loader, MoreVertical, ExternalLink, Power, PowerOff } from 'lucide-react';
+import { ApiConnection } from '../../../services/ConnectionService';
 
 interface ConnectionListProps {
   connections: ApiConnection[];
   onEdit: (connection: ApiConnection) => void;
   onDelete: (connectionId: string) => Promise<void>;
   onToggleActive: (connectionId: string, active: boolean) => Promise<void>;
-  onView: (connection: ApiConnection) => void;
 }
 
 const ConnectionList: React.FC<ConnectionListProps> = ({
   connections,
   onEdit,
   onDelete,
-  onToggleActive,
-  onView
+  onToggleActive
 }) => {
-  const { t } = useTranslation('pages');
+  const { t } = useTranslation('components');
   const { theme } = useTheme();
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isToggling, setIsToggling] = useState<string | null>(null);
@@ -40,6 +37,29 @@ const ConnectionList: React.FC<ConnectionListProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Dictionary of connection types
+  const connectionTypeIcons: Record<string, string> = {
+    woocommerce: '🛒',
+    shopify: '🏪',
+    hubspot: '📊',
+    brincr: '🤝',
+    quickbooks: '💵',
+    mailchimp: '📧',
+    salesforce: '☁️',
+    xero: '📒',
+  };
+
+  const connectionTypeNames: Record<string, string> = {
+    woocommerce: 'WooCommerce',
+    shopify: 'Shopify',
+    hubspot: 'HubSpot',
+    brincr: 'Brincr',
+    quickbooks: 'QuickBooks',
+    mailchimp: 'Mailchimp',
+    salesforce: 'Salesforce',
+    xero: 'Xero',
+  };
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -76,44 +96,11 @@ const ConnectionList: React.FC<ConnectionListProps> = ({
     setActiveDropdown(prev => prev === connectionId ? null : connectionId);
   };
 
-  if (!connections || connections.length === 0) {
+  if (connections.length === 0) {
     return (
-      <div className={`flex flex-col items-center justify-center py-12 px-4 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'} rounded-lg`}>
-        <div className="max-w-md text-center">
-          <div className={`mx-auto flex items-center justify-center h-24 w-24 rounded-full ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`}>
-            <svg
-              className={`h-12 w-12 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-              />
-            </svg>
-          </div>
-          <h3 className={`mt-6 text-lg font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-            {t('connectionList.noConnectionsTitle')}
-          </h3>
-          <p className={`mt-2 text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-            {t('connectionList.noConnectionsDescription')}
-          </p>
-          <div className="mt-6">
-            <Link to="/integrations">
-              <button
-                className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 ${theme === 'dark' ? 'focus:ring-indigo-500 focus:ring-offset-gray-800' : 'focus:ring-indigo-500'}`}
-              >
-                <Plus className="-ml-1 mr-2 h-5 w-5" />
-                {t('connectionList.createNewConnection')}
-              </button>
-            </Link>
-          </div>
-        </div>
-      </div >
+      <div className={`text-center py-6 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+        <p>{t('connectionList.noConnections')}</p>
+      </div>
     );
   }
 
@@ -125,8 +112,7 @@ const ConnectionList: React.FC<ConnectionListProps> = ({
           className={`p-4 rounded-lg border shadow ${theme === 'dark'
             ? 'bg-gray-800 border-gray-700'
             : 'bg-white border-gray-200'
-            } cursor-pointer transition-shadow hover:shadow-md`}
-          onClick={() => onView(connection)}
+            }`}
         >
           <div className="flex items-start justify-between">
             <div className="flex items-center">
@@ -145,10 +131,7 @@ const ConnectionList: React.FC<ConnectionListProps> = ({
 
             <div className="relative" ref={dropdownRef}>
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleDropdown(connection.id);
-                }}
+                onClick={() => toggleDropdown(connection.id)}
                 className={`p-1 rounded-md ${theme === 'dark'
                   ? 'hover:bg-gray-700 text-gray-400'
                   : 'hover:bg-gray-100 text-gray-600'
@@ -162,24 +145,7 @@ const ConnectionList: React.FC<ConnectionListProps> = ({
                   } ring-1 ring-black ring-opacity-5`}>
                   <div className="py-1">
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onView(connection);
-                      }}
-                      className={`flex items-center w-full px-4 py-2 text-sm ${theme === 'dark'
-                        ? 'text-gray-200 hover:bg-gray-600'
-                        : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                    >
-                      <ExternalLink size={16} className="mr-2" />
-                      {t('connectionList.view')}
-                    </button>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit(connection);
-                      }}
+                      onClick={() => onEdit(connection)}
                       className={`flex items-center w-full px-4 py-2 text-sm ${theme === 'dark'
                         ? 'text-gray-200 hover:bg-gray-600'
                         : 'text-gray-700 hover:bg-gray-100'
@@ -190,10 +156,7 @@ const ConnectionList: React.FC<ConnectionListProps> = ({
                     </button>
 
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleActive(connection.id, connection.active);
-                      }}
+                      onClick={() => handleToggleActive(connection.id, connection.active)}
                       disabled={isToggling === connection.id}
                       className={`flex items-center w-full px-4 py-2 text-sm ${theme === 'dark'
                         ? 'text-gray-200 hover:bg-gray-600'
@@ -213,10 +176,7 @@ const ConnectionList: React.FC<ConnectionListProps> = ({
                     </button>
 
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(connection.id);
-                      }}
+                      onClick={() => handleDelete(connection.id)}
                       disabled={isDeleting === connection.id}
                       className={`flex items-center w-full px-4 py-2 text-sm ${theme === 'dark'
                         ? 'text-red-400 hover:bg-gray-600'

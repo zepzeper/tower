@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -20,7 +21,7 @@ const ForgotPassword = () => {
     try {
       // Replace with your actual API call
       // await api.post('/auth/forgot-password', { email });
-      
+
       // For demo purposes, simulate success after 1 second
       setTimeout(() => {
         setIsSubmitted(true);
@@ -54,7 +55,7 @@ const ForgotPassword = () => {
             </Link>
           </p>
         </div>
-        
+
         {error && (
           <div className={`rounded-md ${theme === 'light' ? 'bg-red-50' : 'bg-red-900 bg-opacity-20'} p-4`}>
             <div className="flex">
@@ -69,7 +70,7 @@ const ForgotPassword = () => {
             </div>
           </div>
         )}
-        
+
         {isSubmitted ? (
           <div className={`rounded-md ${theme === 'light' ? 'bg-green-50' : 'bg-green-900 bg-opacity-20'} p-4`}>
             <div className="flex">
@@ -108,11 +109,10 @@ const ForgotPassword = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`appearance-none block w-full px-3 py-2 border ${
-                    theme === 'light' 
-                      ? 'border-gray-300 placeholder-gray-400 text-gray-900 focus:ring-green-500 focus:border-green-500 bg-white' 
+                  className={`appearance-none block w-full px-3 py-2 border ${theme === 'light'
+                      ? 'border-gray-300 placeholder-gray-400 text-gray-900 focus:ring-green-500 focus:border-green-500 bg-white'
                       : 'border-gray-700 placeholder-gray-500 text-white focus:ring-green-500 focus:border-green-500 bg-gray-800'
-                  } rounded-md shadow-sm focus:outline-none sm:text-sm`}
+                    } rounded-md shadow-sm focus:outline-none sm:text-sm`}
                   placeholder={t('auth.forgotPassword.emailLabel')}
                 />
               </div>
@@ -122,11 +122,10 @@ const ForgotPassword = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                  theme === 'light' 
-                    ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500' 
+                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${theme === 'light'
+                    ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
                     : 'bg-green-600 hover:bg-green-700 focus:ring-green-400'
-                } focus:outline-none focus:ring-2 focus:ring-offset-2`}
+                  } focus:outline-none focus:ring-2 focus:ring-offset-2`}
               >
                 {isLoading ? t('auth.forgotPassword.sending') : t('auth.forgotPassword.sendResetLink')}
               </button>

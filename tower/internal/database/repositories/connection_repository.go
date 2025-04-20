@@ -8,240 +8,360 @@ import (
 	"github.com/zepzeper/tower/internal/database/models"
 )
 
-// ConnectionRepository handles database operations for connections
-type ConnectionRepository struct {
+// APIConnectionRepository handles database operations for API connections
+type APIConnectionRepository struct {
 	db *sql.DB
 }
 
-// NewConnectionRepository creates a new connection repository
-func NewConnectionRepository(db *sql.DB) *ConnectionRepository {
-	return &ConnectionRepository{
+// NewAPIConnectionRepository creates a new API connection repository
+func NewAPIConnectionRepository(db *sql.DB) *APIConnectionRepository {
+	return &APIConnectionRepository{
 		db: db,
 	}
 }
 
-// GetAll retrieves all connections
-func (r *ConnectionRepository) GetAll() ([]models.Connection, error) {
+// GetAll retrieves all API connections with their configurations
+func (r *APIConnectionRepository) GetAll() ([]models.APIConnection, error) {
+	// Get all connections
 	query := `
-		SELECT id, name, description, source_id, target_id, transformer_id, config, schedule, active, last_run, created_at, updated_at
-		FROM connections
+		SELECT id, name, description, type, active, created_at, updated_at
+		FROM api_connections
 		ORDER BY name ASC
 	`
-	
+
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	
-	var connections []models.Connection
+
+	var connections []models.APIConnection
 	for rows.Next() {
-		var connection models.Connection
+		var conn models.APIConnection
 		if err := rows.Scan(
-			&connection.ID,
-			&connection.Name,
-			&connection.Description,
-			&connection.SourceID,
-			&connection.TargetID,
-			&connection.TransformerID,
-			&connection.Config,
-			&connection.Schedule,
-			&connection.Active,
-			&connection.LastRun,
-			&connection.CreatedAt,
-			&connection.UpdatedAt,
+			&conn.ID,
+			&conn.Name,
+			&conn.Description,
+			&conn.Type,
+			&conn.Active,
+			&conn.CreatedAt,
+			&conn.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
-		connections = append(connections, connection)
+
+		// Load config for this connection
+		config, err := r.GetConnectionConfig(conn.ID, false)
+		if err != nil {
+			return nil, err
+		}
+		conn.Config = config
+
+		connections = append(connections, conn)
 	}
-	
+
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
-	
+
 	return connections, nil
 }
 
-// GetByID retrieves a connection by ID
-func (r *ConnectionRepository) GetByID(id string) (models.Connection, error) {
+// GetByID retrieves an API connection by ID
+func (r *APIConnectionRepository) GetByID(id string, includeSecrets bool) (models.APIConnection, error) {
 	query := `
-		SELECT id, name, description, source_id, target_id, transformer_id, config, schedule, active, last_run, created_at, updated_at
-		FROM connections
+		SELECT id, name, description, type, active, created_at, updated_at
+		FROM api_connections
 		WHERE id = $1
 	`
-	
-	var connection models.Connection
+
+	var conn models.APIConnection
 	err := r.db.QueryRow(query, id).Scan(
-		&connection.ID,
-		&connection.Name,
-		&connection.Description,
-		&connection.SourceID,
-		&connection.TargetID,
-		&connection.TransformerID,
-		&connection.Config,
-		&connection.Schedule,
-		&connection.Active,
-		&connection.LastRun,
-		&connection.CreatedAt,
-		&connection.UpdatedAt,
+		&conn.ID,
+		&conn.Name,
+		&conn.Description,
+		&conn.Type,
+		&conn.Active,
+		&conn.CreatedAt,
+		&conn.UpdatedAt,
 	)
-	
+
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return connection, fmt.Errorf("connection not found: %s", id)
+			return conn, fmt.Errorf("API connection not found: %s", id)
 		}
-		return connection, err
+		return conn, err
 	}
-	
-	return connection, nil
+
+	// Load config for this connection
+	config, err := r.GetConnectionConfig(id, includeSecrets)
+	if err != nil {
+		return conn, err
+	}
+	conn.Config = config
+
+	return conn, nil
 }
 
-// Create inserts a new connection
-func (r *ConnectionRepository) Create(connection models.Connection) error {
+// Create inserts a new API connection with its configuration
+func (r *APIConnectionRepository) Create(conn models.APIConnection) error {
+	// Start a transaction for atomicity
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// Insert connection
 	query := `
-		INSERT INTO connections (id, name, description, source_id, target_id, transformer_id, config, schedule, active, last_run, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+		INSERT INTO api_connections (id, name, description, type, active, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
-	
+
 	now := time.Now()
-	connection.CreatedAt = now
-	connection.UpdatedAt = now
-	
-	_, err := r.db.Exec(
+	conn.CreatedAt = now
+	conn.UpdatedAt = now
+
+	_, err = tx.Exec(
 		query,
-		connection.ID,
-		connection.Name,
-		connection.Description,
-		connection.SourceID,
-		connection.TargetID,
-		connection.TransformerID,
-		connection.Config,
-		connection.Schedule,
-		connection.Active,
-		connection.LastRun,
-		connection.CreatedAt,
-		connection.UpdatedAt,
+		conn.ID,
+		conn.Name,
+		conn.Description,
+		conn.Type,
+		conn.Active,
+		conn.CreatedAt,
+		conn.UpdatedAt,
 	)
-	
-	return err
+
+	if err != nil {
+		return err
+	}
+
+	// Insert configuration
+	if len(conn.Config) > 0 {
+		for key, value := range conn.Config {
+			// Determine if this is a secret (you might want to have a more sophisticated approach)
+			isSecret := key == "api_key" || key == "client_secret" || key == "password" || key == "token"
+
+			configQuery := `
+				INSERT INTO api_connection_configs (connection_id, key, value, is_secret, created_at, updated_at)
+				VALUES ($1, $2, $3, $4, $5, $6)
+			`
+
+			_, err = tx.Exec(
+				configQuery,
+				conn.ID,
+				key,
+				value,
+				isSecret,
+				now,
+				now,
+			)
+
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return tx.Commit()
 }
 
-// Update updates an existing connection
-func (r *ConnectionRepository) Update(connection models.Connection) error {
+// Update updates an existing API connection and its configuration
+func (r *APIConnectionRepository) Update(conn models.APIConnection) error {
+	// Start a transaction
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// Update connection
 	query := `
-		UPDATE connections
-		SET name = $1, description = $2, source_id = $3, target_id = $4, transformer_id = $5, 
-			config = $6, schedule = $7, active = $8, last_run = $9, updated_at = $10
-		WHERE id = $11
+		UPDATE api_connections
+		SET name = $1, description = $2, type = $3, active = $4, updated_at = $5
+		WHERE id = $6
 	`
-	
-	connection.UpdatedAt = time.Now()
-	
-	result, err := r.db.Exec(
+
+	now := time.Now()
+	conn.UpdatedAt = now
+
+	result, err := tx.Exec(
 		query,
-		connection.Name,
-		connection.Description,
-		connection.SourceID,
-		connection.TargetID,
-		connection.TransformerID,
-		connection.Config,
-		connection.Schedule,
-		connection.Active,
-		connection.LastRun,
-		connection.UpdatedAt,
-		connection.ID,
+		conn.Name,
+		conn.Description,
+		conn.Type,
+		conn.Active,
+		now,
+		conn.ID,
 	)
-	
+
 	if err != nil {
 		return err
 	}
-	
+
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		return err
 	}
-	
+
 	if rowsAffected == 0 {
-		return fmt.Errorf("connection not found: %s", connection.ID)
+		return fmt.Errorf("API connection not found: %s", conn.ID)
 	}
-	
-	return nil
+
+	// For configuration, we'll use a merge approach:
+	// 1. Delete any config items not in the new config
+	// 2. Update existing items
+	// 3. Insert new items
+
+	if len(conn.Config) > 0 {
+		// Get existing config keys
+		existingKeys := make(map[string]bool)
+		existingQuery := `
+			SELECT key FROM api_connection_configs
+			WHERE connection_id = $1
+		`
+
+		rows, err := tx.Query(existingQuery, conn.ID)
+		if err != nil {
+			return err
+		}
+
+		for rows.Next() {
+			var key string
+			if err := rows.Scan(&key); err != nil {
+				rows.Close()
+				return err
+			}
+			existingKeys[key] = true
+		}
+		rows.Close()
+
+		// Update or insert config items
+		for key, value := range conn.Config {
+			isSecret := key == "api_key" || key == "client_secret" || key == "password" || key == "token"
+
+			if existingKeys[key] {
+				// Update
+				updateQuery := `
+					UPDATE api_connection_configs
+					SET value = $1, is_secret = $2, updated_at = $3
+					WHERE connection_id = $4 AND key = $5
+				`
+
+				_, err = tx.Exec(updateQuery, value, isSecret, now, conn.ID, key)
+				if err != nil {
+					return err
+				}
+
+				delete(existingKeys, key)
+			} else {
+				// Insert
+				insertQuery := `
+					INSERT INTO api_connection_configs (connection_id, key, value, is_secret, created_at, updated_at)
+					VALUES ($1, $2, $3, $4, $5, $6)
+				`
+
+				_, err = tx.Exec(insertQuery, conn.ID, key, value, isSecret, now, now)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		// Delete any remaining keys that aren't in the new config
+		for key := range existingKeys {
+			deleteQuery := `
+				DELETE FROM api_connection_configs
+				WHERE connection_id = $1 AND key = $2
+			`
+
+			_, err = tx.Exec(deleteQuery, conn.ID, key)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		// If the new config is empty, delete all config items
+		deleteQuery := `
+			DELETE FROM api_connection_configs
+			WHERE connection_id = $1
+		`
+
+		_, err = tx.Exec(deleteQuery, conn.ID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
 }
 
-// Delete removes a connection
-func (r *ConnectionRepository) Delete(id string) error {
-	query := `DELETE FROM connections WHERE id = $1`
-	
-	result, err := r.db.Exec(query, id)
-	if err != nil {
-		return err
-	}
-	
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	
-	if rowsAffected == 0 {
-		return fmt.Errorf("connection not found: %s", id)
-	}
-	
-	return nil
-}
-
-// UpdateLastRun updates the last run timestamp for a connection
-func (r *ConnectionRepository) UpdateLastRun(id string, lastRun time.Time) error {
+// GetConnectionConfig retrieves all configuration for a connection
+func (r *APIConnectionRepository) GetConnectionConfig(connectionID string, includeSecrets bool) (map[string]string, error) {
 	query := `
-		UPDATE connections
-		SET last_run = $1
-		WHERE id = $2
+		SELECT key, value, is_secret
+		FROM api_connection_configs
+		WHERE connection_id = $1
 	`
-	
-	result, err := r.db.Exec(query, lastRun, id)
+
+	rows, err := r.db.Query(query, connectionID)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
+	defer rows.Close()
+
+	config := make(map[string]string)
+	for rows.Next() {
+		var key, value string
+		var isSecret bool
+
+		if err := rows.Scan(&key, &value, &isSecret); err != nil {
+			return nil, err
+		}
+
+		// Skip secrets if not requested
+		if isSecret && !includeSecrets {
+			continue
+		}
+
+		config[key] = value
 	}
-	
-	if rowsAffected == 0 {
-		return fmt.Errorf("connection not found: %s", id)
+
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
-	
-	return nil
+
+	return config, nil
 }
 
 // SetActive sets the active status of a connection
-func (r *ConnectionRepository) SetActive(id string, active bool) error {
+func (r *APIConnectionRepository) SetActive(id string, active bool) error {
 	query := `
-		UPDATE connections
+		UPDATE api_connections
 		SET active = $1, updated_at = $2
 		WHERE id = $3
 	`
-	
+
 	result, err := r.db.Exec(
 		query,
 		active,
 		time.Now(),
 		id,
 	)
-	
+
 	if err != nil {
 		return err
 	}
-	
+
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		return err
 	}
-	
+
 	if rowsAffected == 0 {
-		return fmt.Errorf("connection not found: %s", id)
+		return fmt.Errorf("API connection not found: %s", id)
 	}
-	
+
 	return nil
 }

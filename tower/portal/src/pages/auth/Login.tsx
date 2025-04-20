@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -61,7 +62,7 @@ const Login: React.FC = () => {
             </Link>
           </p>
         </div>
-        
+
         {error && (
           <div className={`rounded-md ${theme === 'light' ? 'bg-red-50' : 'bg-red-900 bg-opacity-20'} p-4`}>
             <div className="flex">
@@ -76,7 +77,7 @@ const Login: React.FC = () => {
             </div>
           </div>
         )}
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
@@ -89,11 +90,10 @@ const Login: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                  theme === 'light' 
-                    ? 'border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-green-500 focus:border-green-500' 
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${theme === 'light'
+                    ? 'border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-green-500 focus:border-green-500'
                     : 'border-gray-700 placeholder-gray-400 text-white bg-gray-800 focus:ring-green-500 focus:border-green-500'
-                } rounded-t-md focus:outline-none focus:z-10 sm:text-sm`}
+                  } rounded-t-md focus:outline-none focus:z-10 sm:text-sm`}
                 placeholder={t('auth.login.emailLabel')}
               />
             </div>
@@ -107,11 +107,10 @@ const Login: React.FC = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                  theme === 'light' 
-                    ? 'border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-green-500 focus:border-green-500' 
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${theme === 'light'
+                    ? 'border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-green-500 focus:border-green-500'
                     : 'border-gray-700 placeholder-gray-400 text-white bg-gray-800 focus:ring-green-500 focus:border-green-500'
-                } rounded-b-md focus:outline-none focus:z-10 sm:text-sm`}
+                  } rounded-b-md focus:outline-none focus:z-10 sm:text-sm`}
                 placeholder={t('auth.login.passwordLabel')}
               />
             </div>
@@ -141,11 +140,10 @@ const Login: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                theme === 'light' 
-                  ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500' 
+              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${theme === 'light'
+                  ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
                   : 'bg-green-600 hover:bg-green-700 focus:ring-green-400'
-              } focus:outline-none focus:ring-2 focus:ring-offset-2`}
+                } focus:outline-none focus:ring-2 focus:ring-offset-2`}
             >
               {isLoading ? (
                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">

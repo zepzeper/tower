@@ -8,13 +8,13 @@ import (
 )
 
 type ConnectionHandler struct {
-    connectionService *connection.Service    
+	connectionService *connection.Service
 }
 
 func NewConnectionHandler(connectionService *connection.Service) *ConnectionHandler {
-    return &ConnectionHandler{
-        connectionService: connectionService,
-    }
+	return &ConnectionHandler{
+		connectionService: connectionService,
+	}
 }
 
 func (h *ConnectionHandler) Fetch(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +23,6 @@ func (h *ConnectionHandler) Fetch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-  h.connectionService.FetchConnections()
-
+	// h.connectionService.FetchConnections()
 
 }

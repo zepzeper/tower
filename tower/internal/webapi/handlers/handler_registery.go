@@ -9,9 +9,9 @@ import (
 
 // Registry holds all the handlers for the internal API
 type Registry struct {
-	mappingHandler *MappingHandler
+	mappingHandler    *MappingHandler
 	connectionHandler *ConnectionHandler
-	authHandler *AuthHandler
+	authHandler       *AuthHandler
 }
 
 // NewRegistry creates a new handler registry
@@ -21,21 +21,20 @@ func NewRegistry(
 	connectionService *connection.Service,
 ) *Registry {
 	return &Registry{
-		mappingHandler: NewMappingHandler(mappingService),
+		mappingHandler:    NewMappingHandler(mappingService),
 		connectionHandler: NewConnectionHandler(connectionService),
 	}
 }
 
 func (r *Registry) RegisterRoutes(router chi.Router) {
-    router.Route("/api", func(routes chi.Router) {
-        routes.Route("/mappings", func(routes chi.Router) {
-            routes.Get("/schema", r.mappingHandler.Fetch)
-            routes.Post("/test", r.mappingHandler.HandleTestMapping)
-        })
+	router.Route("/api", func(routes chi.Router) {
+		routes.Route("/mappings", func(routes chi.Router) {
+			routes.Get("/schema", r.mappingHandler.Fetch)
+			routes.Post("/test", r.mappingHandler.HandleTestMapping)
+		})
 
-        routes.Route("/connections", func(routes chi.Router) {
-            routes.Get("/", r.mappingHandler.Fetch)
-            routes.Post("/test", r.mappingHandler.HandleTestMapping)
-        })
-    })
+		routes.Route("/connections", func(routes chi.Router) {
+			routes.Get("/", r.connectionHandler.Fetch)
+		})
+	})
 }

@@ -9,7 +9,8 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'nl',
-    debug: process.env.NODE_ENV !== 'production',
+    debug: false,
+    //debug: process.env.NODE_ENV !== 'production',
     interpolation: {
       escapeValue: false,
     }

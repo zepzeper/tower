@@ -9,20 +9,21 @@ import (
 // SchemaFetcher is a dependency interface for retrieving schemas
 type SchemaFetcher interface {
 	GetSchema(schemaType, operation, sourceortarget string) (map[string]interface{}, error)
+	GetApis() (map[string]interface{}, error)
 }
 
 // Service provides mapping-related functionality
 type Service struct {
-	schemaFetcher SchemaFetcher
-	transformer   *Transformer
-  databaseManager *database.Manager
+	schemaFetcher   SchemaFetcher
+	transformer     *Transformer
+	databaseManager *database.Manager
 }
 
 // NewService creates a new instance with the given fetcher
 func NewService(fetcher SchemaFetcher, databaseManager *database.Manager) *Service {
 	return &Service{
-		schemaFetcher: fetcher,
-		transformer:   NewTransformer(),
+		schemaFetcher:   fetcher,
+		transformer:     NewTransformer(),
 		databaseManager: databaseManager,
 	}
 }
@@ -33,17 +34,17 @@ func (s *Service) GenerateMapping(sourceType, targetType, operation string) (*Ma
 	if err != nil {
 		return nil, fmt.Errorf("failed to get source schema (%s): %w", sourceType, err)
 	}
-	
+
 	targetSchema, err := s.schemaFetcher.GetSchema(targetType, operation, "target")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get target schema (%s): %w", targetType, err)
 	}
-	
+
 	mapping, err := GenerateMappingData(sourceSchema, targetSchema)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate mappings: %w", err)
 	}
-	
+
 	return &mapping, nil
 }
 
@@ -54,13 +55,13 @@ func (s *Service) ApplyMappings(req TestRequest) (*TestResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get source schema (%s): %w", req.SourceType, err)
 	}
-	
+
 	// Get target schema for type information
 	targetSchema, err := s.schemaFetcher.GetSchema(req.TargetType, "products", "target")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get target schema (%s): %w", req.TargetType, err)
 	}
-	
+
 	// Use the transformer to apply mappings and convert to target format
 	transformedData := s.transformer.TransformFields(sourceData, targetSchema, req.Mappings)
 

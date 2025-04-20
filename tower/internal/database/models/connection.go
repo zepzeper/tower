@@ -21,3 +21,25 @@ type Connection struct {
 	CreatedAt     time.Time       `json:"createdAt"`
 	UpdatedAt     time.Time       `json:"updatedAt"`
 }
+
+// APIConnection represents an API connection in the database
+type APIConnection struct {
+	ID          string            `json:"id"`
+	Name        string            `json:"name"`
+	Description sql.NullString    `json:"description"`
+	Type        string            `json:"type"`
+	Active      bool              `json:"active"`
+	CreatedAt   time.Time         `json:"createdAt"`
+	UpdatedAt   time.Time         `json:"updatedAt"`
+	Config      map[string]string `json:"config,omitempty"` // Not stored in DB directly
+}
+
+// APIConnectionConfig represents a key-value configuration for a connection
+type APIConnectionConfig struct {
+	ConnectionID string    `json:"connectionId"`
+	Key          string    `json:"key"`
+	Value        string    `json:"value"`
+	IsSecret     bool      `json:"isSecret"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
+}

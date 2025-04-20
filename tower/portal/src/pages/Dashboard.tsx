@@ -1,9 +1,9 @@
+import React from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Activity, Users, Database, ArrowUp, ArrowDown } from 'lucide-react';
-import React from 'react';
 
 interface Stats {
   activeConnections: number;
@@ -58,25 +58,25 @@ const Dashboard: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard 
+        <StatCard
           title={t('dashboard.activeConnections')}
           value={stats.activeConnections}
           icon={<Activity size={24} />}
           theme={theme}
         />
-        <StatCard 
+        <StatCard
           title={t('dashboard.totalUsers')}
           value={stats.totalUsers}
           icon={<Users size={24} />}
           theme={theme}
         />
-        <StatCard 
+        <StatCard
           title={t('dashboard.apiCalls')}
           value={stats.apiCalls.toLocaleString()}
           icon={<Database size={24} />}
           theme={theme}
         />
-        <StatCard 
+        <StatCard
           title={t('dashboard.growth')}
           value={`${stats.growth}%`}
           icon={<ArrowUp size={24} className="text-green-500" />}
@@ -143,11 +143,10 @@ const Dashboard: React.FC = () => {
                     {new Date().toLocaleString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      item % 3 === 0
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item % 3 === 0
                         ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:bg-opacity-30 dark:text-red-300'
                         : 'bg-green-100 text-green-800 dark:bg-green-900 dark:bg-opacity-30 dark:text-green-300'
-                    }`}>
+                      }`}>
                       {item % 3 === 0 ? t('dashboard.failed') : t('dashboard.success')}
                     </span>
                   </td>
