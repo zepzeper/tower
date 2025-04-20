@@ -4,6 +4,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/zepzeper/tower/internal/api/middleware"
 	"github.com/zepzeper/tower/internal/services"
+	"github.com/zepzeper/tower/internal/services/connection"
 	"github.com/zepzeper/tower/internal/services/mapping"
 	"github.com/zepzeper/tower/internal/webapi/handlers"
 )
@@ -19,6 +20,7 @@ type Server struct {
 func NewServer(
 	authService *services.AuthService,
 	mappingService *mapping.Service,
+	connectionService *connection.Service,
 ) *Server {
 	r := chi.NewRouter()
 
@@ -37,6 +39,7 @@ func NewServer(
 	server.handlers = handlers.NewRegistry(
     authService,
     mappingService,
+    connectionService,
 	)
 
 	// Setup routes

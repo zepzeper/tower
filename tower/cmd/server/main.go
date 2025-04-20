@@ -16,6 +16,7 @@ import (
 	"github.com/zepzeper/tower/internal/database/repositories"
 	"github.com/zepzeper/tower/internal/server"
 	"github.com/zepzeper/tower/internal/services"
+	"github.com/zepzeper/tower/internal/services/connection"
 	"github.com/zepzeper/tower/internal/services/mapping"
 )
 
@@ -50,11 +51,13 @@ func main() {
 	// Create service layer
   authService := services.NewAuthService(*authRepo, "123", 24*time.Hour);
   mappingService := mapping.NewService(schemaFetcher)
+  connectionService := connection.NewService()
 
 	// Create central server
 	server := server.NewServer(
     authService,
     mappingService,
+    connectionService,
 	)
 
 	// // Initialize job manager with existing connections

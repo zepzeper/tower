@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/zepzeper/tower/internal/api"
 	"github.com/zepzeper/tower/internal/services"
+	"github.com/zepzeper/tower/internal/services/connection"
 	"github.com/zepzeper/tower/internal/services/mapping"
 	"github.com/zepzeper/tower/internal/webapi"
 )
@@ -26,6 +27,7 @@ type Server struct {
 func NewServer(
 	authService *services.AuthService,
 	mappingService *mapping.Service,
+	connectionService *connection.Service,
 ) *Server {
 	// Create main router
 	router := chi.NewRouter()
@@ -38,6 +40,7 @@ func NewServer(
 	webapiServer := webapi.NewServer(
     authService,
     mappingService,
+    connectionService,
 	)
 
 	// Create central server
