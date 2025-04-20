@@ -2,6 +2,8 @@ package mapping
 
 import (
 	"fmt"
+
+	"github.com/zepzeper/tower/internal/database"
 )
 
 // SchemaFetcher is a dependency interface for retrieving schemas
@@ -13,13 +15,15 @@ type SchemaFetcher interface {
 type Service struct {
 	schemaFetcher SchemaFetcher
 	transformer   *Transformer
+  databaseManager *database.Manager
 }
 
 // NewService creates a new instance with the given fetcher
-func NewService(fetcher SchemaFetcher) *Service {
+func NewService(fetcher SchemaFetcher, databaseManager *database.Manager) *Service {
 	return &Service{
 		schemaFetcher: fetcher,
 		transformer:   NewTransformer(),
+		databaseManager: databaseManager,
 	}
 }
 

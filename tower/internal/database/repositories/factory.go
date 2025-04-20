@@ -10,6 +10,7 @@ type Factory struct {
 	transformerRepo   *TransformerRepository
 	connectionRepo    *ConnectionRepository
 	executionRepo     *ExecutionRepository
+	authRepo          *AuthRepository
 }
 
 // NewFactory creates a new repository factory
@@ -41,4 +42,12 @@ func (f *Factory) Execution() *ExecutionRepository {
 		f.executionRepo = NewExecutionRepository(f.db)
 	}
 	return f.executionRepo
+}
+
+// Execution returns an execution repository
+func (f *Factory) Auth() *AuthRepository {
+	if f.authRepo == nil {
+		f.authRepo = NewAuthRepository(f.db)
+	}
+	return f.authRepo
 }

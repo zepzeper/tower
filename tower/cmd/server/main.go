@@ -39,8 +39,6 @@ func main() {
 		log.Fatalf("Failed to migrate database schema: %v", err)
 	}
 
-	authRepo := repositories.NewAuthRepository(dbManager.DB)
-
   cwd, err := os.Getwd()
   if err != nil {
     log.Fatal(err)
@@ -49,9 +47,9 @@ func main() {
   schemaFetcher := registry.NewSchemaFetcher(schemaPath)
 
 	// Create service layer
-  authService := services.NewAuthService(*authRepo, "123", 24*time.Hour);
-  mappingService := mapping.NewService(schemaFetcher)
-  connectionService := connection.NewService()
+  authService := services.NewAuthService("123", 24*time.Hour, dbManager);
+  connectionService := connection.NewService(dbManager)
+  mappingService := mapping.NewService(schemaFetcher, dbManager)
 
 	// Create central server
 	server := server.NewServer(

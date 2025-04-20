@@ -1,23 +1,35 @@
 package connection
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/zepzeper/tower/internal/database"
+	"github.com/zepzeper/tower/internal/database/models"
+)
 
 // Service provides mapping-related functionality
 type Service struct {
     apiManager *APIManager
+    databaseManager *database.Manager
 }
 
 // NewService creates a new instance with the given fetcher
-func NewService() *Service {
+func NewService(databaseManager *database.Manager) *Service {
 	return &Service{
         apiManager: &APIManager{
             Connections: make(map[string]*Connection),
         },
+        databaseManager: databaseManager,
 	}
 }
 
-func (s *Service) FetchConnections() map[string]*Connection {
-	return s.apiManager.Connections
+func (s *Service) FetchConnections() ([]models.Connection, error) {
+    conn, err := s.databaseManager.Repos.Connection().GetAll();
+    if err != nil {
+        return nil, fmt.Errorf("Failed fetching connections: %s", err)
+    }
+
+    return conn, nil
 }
 
 func (s *Service) GetConnection(id string) (*Connection, error) {

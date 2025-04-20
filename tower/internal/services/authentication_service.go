@@ -5,22 +5,22 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/zepzeper/tower/internal/database"
 	"github.com/zepzeper/tower/internal/database/models"
-	"github.com/zepzeper/tower/internal/database/repositories"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {
-	repo         repositories.AuthRepository
-	jwtSecret    string
-	tokenExpiry  time.Duration
+	jwtSecret         string
+	tokenExpiry       time.Duration
+  databaseManager   *database.Manager
 }
 
-func NewAuthService(repo repositories.AuthRepository, jwtSecret string, tokenExpiry time.Duration) *AuthService {
+func NewAuthService(jwtSecret string, tokenExpiry time.Duration, databaseManager *database.Manager) *AuthService {
 	return &AuthService{
-		repo:         repo,
 		jwtSecret:    jwtSecret,
 		tokenExpiry:  tokenExpiry,
+		databaseManager: databaseManager,
 	}
 }
 
@@ -30,11 +30,11 @@ func (s *AuthService) CreateUser(email, password string) (*models.User, error) {
 		return nil, err
 	}
 
-	return s.repo.CreateUser(email, string(hashedPassword))
+	return s.databaseManager.Repos.Auth().CreateUser(email, string(hashedPassword))
 }
 
 func (s *AuthService) Authenticate(email, password string) (*models.User, error) {
-	user, err := s.repo.GetUserByEmail(email)
+	user, err := s.databaseManager.Repos.Auth().GetUserByEmail(email)
 	if err != nil {
 		return nil, err
 	}
@@ -63,5 +63,5 @@ func (s *AuthService) GenerateToken(userID string) (string, error) {
 }
 
 func (s *AuthService) UserExists(email string) (bool, error) {
-	return s.repo.UserExists(email)
+	return s.databaseManager.Repos.Auth().UserExists(email)
 }
