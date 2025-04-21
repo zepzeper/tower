@@ -69,7 +69,7 @@ class ConnectionService {
   }
 
   async getApiConnections(): Promise<ApiConnection[]> {
-    const response = await fetch(`${this.baseUrl}/connections/api`);
+    const response = await fetch(`${this.baseUrl}/connections`);
     if (!response.ok) throw new Error(`Failed to fetch API connections: ${response.statusText}`);
     return await response.json();
   }
@@ -78,13 +78,13 @@ class ConnectionService {
     connection: ApiConnection;
     configs: ApiConnectionConfig[];
   }> {
-    const response = await fetch(`${this.baseUrl}/connections/api/${id}`);
+    const response = await fetch(`${this.baseUrl}/connections/${id}`);
     if (!response.ok) throw new Error(`Failed to fetch API connection ${id}: ${response.statusText}`);
     return await response.json();
   }
 
   async createApiConnection(data: ApiConnectionCreateRequest): Promise<ApiConnection> {
-    const response = await fetch(`${this.baseUrl}/connections/api`, {
+    const response = await fetch(`${this.baseUrl}/connections`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -94,7 +94,7 @@ class ConnectionService {
   }
 
   async updateApiConnection(data: ApiConnectionUpdateRequest): Promise<ApiConnection> {
-    const response = await fetch(`${this.baseUrl}/connections/api/${data.id}`, {
+    const response = await fetch(`${this.baseUrl}/connections/${data.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -104,7 +104,7 @@ class ConnectionService {
   }
 
   async deleteApiConnection(id: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/connections/api/${id}`, {
+    const response = await fetch(`${this.baseUrl}/connections/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) throw new Error(`Failed to delete API connection ${id}: ${response.statusText}`);
@@ -114,7 +114,7 @@ class ConnectionService {
     success: boolean;
     message: string;
   }> {
-    const response = await fetch(`${this.baseUrl}/connections/api/test`, {
+    const response = await fetch(`${this.baseUrl}/connections/test`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),

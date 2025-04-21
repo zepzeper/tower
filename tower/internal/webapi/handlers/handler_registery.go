@@ -31,10 +31,13 @@ func (r *Registry) RegisterRoutes(router chi.Router) {
 		routes.Route("/mappings", func(routes chi.Router) {
 			routes.Get("/schema", r.mappingHandler.Fetch)
 			routes.Post("/test", r.mappingHandler.HandleTestMapping)
+
+			routes.Route("/connections", func(routes chi.Router) {
+				routes.Get("/", r.connectionHandler.Fetch)
+				routes.Post("/test", r.connectionHandler.Test)
+				routes.Post("/save", r.connectionHandler.Test)
+			})
 		})
 
-		routes.Route("/connections", func(routes chi.Router) {
-			routes.Get("/", r.connectionHandler.Fetch)
-		})
 	})
 }

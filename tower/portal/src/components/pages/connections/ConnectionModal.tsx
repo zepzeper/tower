@@ -94,7 +94,7 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
 
       if (isEditMode) {
         try {
-          const { configs } = await connectionService.getApiConnectionWithConfig(connectionId);
+          const { connection, configs } = await connectionService.getApiConnectionWithConfig(connectionId);
           const newConfigFields = typeInfo.configTemplate.map(template => ({
             ...template,
             value: configs.find(c => c.key === template.key)?.value || template.default || '',
@@ -166,7 +166,6 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
   };
 
   const isFormValid = (): boolean => {
-    if (!name.trim()) return false;
     if (!selectedType) return false;
 
     // Check if all required fields have values
@@ -174,7 +173,6 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
       .filter(field => field.required)
       .every(field => field.value.trim() !== '');
 
-    console.log(configFields)
 
     return requiredFieldsValid;
   };
@@ -271,7 +269,6 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
                       : 'border-gray-300 text-gray-900'
                       }`}
                   >
-                    <option selected={true}>{t('connectionModal.selectType')}</option>
                     {connectionTypes.map(type => (
                       <option key={type.id} value={type.id}>{type.name}</option>
                     ))}
