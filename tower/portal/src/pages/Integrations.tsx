@@ -160,14 +160,11 @@ const Integrations: React.FC = () => {
             className={`p-6 rounded-lg shadow-md ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}
           >
             <div className="flex flex-col items-center">
-              <div className="w-20 h-20 mb-4 flex items-center justify-center">
+              <div className="w-40 h-20 mb-4 flex items-center justify-center">
                 <img
                   src={integration.imageUrl}
                   alt={integration.name}
                   className="max-w-full max-h-full object-contain"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = getDefaultImageUrl(integration.id);
-                  }}
                 />
               </div>
               <div className="text-center">

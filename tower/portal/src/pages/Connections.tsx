@@ -1,271 +1,90 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
-import { Edit, Trash2, Loader, MoreVertical, ExternalLink, Power, PowerOff, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { ApiConnection } from '../services/connectionService';
+import { Plus, Search } from 'lucide-react';
+import ConnectionList from '../components/pages/connections/ConnectionList';
+import { ApiConnection, connectionService } from '../services/connectionService';
 
-interface ConnectionListProps {
-  connections: ApiConnection[];
-  onEdit: (connection: ApiConnection) => void;
-  onDelete: (connectionId: string) => Promise<void>;
-  onToggleActive: (connectionId: string, active: boolean) => Promise<void>;
-  onView: (connection: ApiConnection) => void;
-}
-
-const ConnectionList: React.FC<ConnectionListProps> = ({
-  connections,
-  onEdit,
-  onDelete,
-  onToggleActive,
-  onView
-}) => {
+const Connections: React.FC = () => {
   const { t } = useTranslation('pages');
   const { theme } = useTheme();
-  const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  const [isToggling, setIsToggling] = useState<string | null>(null);
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [connections, setConnections] = useState<ApiConnection[]>([]);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setActiveDropdown(null);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    fetchConnections();
   }, []);
 
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  // Handle connection deletion
-  const handleDelete = async (connectionId: string) => {
-    setIsDeleting(connectionId);
+  const fetchConnections = async () => {
     try {
-      await onDelete(connectionId);
+      const data = await connectionService.getApiConnections();
+      setConnections(data);
+    } catch (err) {
+      console.error('Failed to fetch connections', err);
     } finally {
-      setIsDeleting(null);
     }
   };
 
-  // Handle toggling connection active state
-  const handleToggleActive = async (connectionId: string, currentActive: boolean) => {
-    setIsToggling(connectionId);
-    try {
-      await onToggleActive(connectionId, !currentActive);
-    } finally {
-      setIsToggling(null);
-    }
-  };
-
-  // Toggle dropdown menu
-  const toggleDropdown = (connectionId: string) => {
-    setActiveDropdown(prev => prev === connectionId ? null : connectionId);
-  };
-
-  if (!connections || connections.length === 0) {
-    return (
-      <div className={`flex flex-col items-center justify-center py-12 px-4 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'} rounded-lg`}>
-        <div className="max-w-md text-center">
-          <div className={`mx-auto flex items-center justify-center h-24 w-24 rounded-full ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`}>
-            <svg
-              className={`h-12 w-12 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-              />
-            </svg>
-          </div>
-          <h3 className={`mt-6 text-lg font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-            {t('connectionList.noConnectionsTitle')}
-          </h3>
-          <p className={`mt-2 text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-            {t('connectionList.noConnectionsDescription')}
-          </p>
-          <div className="mt-6">
-            <Link to="/integrations">
-              <button
-                className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 ${theme === 'dark' ? 'focus:ring-indigo-500 focus:ring-offset-gray-800' : 'focus:ring-indigo-500'}`}
-              >
-                <Plus className="-ml-1 mr-2 h-5 w-5" />
-                {t('connectionList.createNewConnection')}
-              </button>
-            </Link>
-          </div>
-        </div>
-      </div >
-    );
-  }
+  const filteredConnections = connections.filter(connection =>
+    connection.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    connection.type.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {connections.map((connection) => (
-        <div
-          key={connection.id}
-          className={`p-4 rounded-lg border shadow ${theme === 'dark'
-            ? 'bg-gray-800 border-gray-700'
-            : 'bg-white border-gray-200'
-            } cursor-pointer transition-shadow hover:shadow-md`}
-          onClick={() => onView(connection)}
-        >
-          <div className="flex items-start justify-between">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center text-xl rounded-lg bg-gray-100 dark:bg-gray-700 mr-3">
-                {connectionTypeIcons[connection.type] || '🔌'}
-              </div>
-              <div>
-                <h3 className={`text-lg font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  {connection.name}
-                </h3>
-                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {connectionTypeNames[connection.type] || connection.type}
-                </p>
-              </div>
-            </div>
-
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleDropdown(connection.id);
-                }}
-                className={`p-1 rounded-md ${theme === 'dark'
-                  ? 'hover:bg-gray-700 text-gray-400'
-                  : 'hover:bg-gray-100 text-gray-600'
-                  }`}
-              >
-                <MoreVertical size={20} />
-              </button>
-
-              {activeDropdown === connection.id && (
-                <div className={`absolute right-0 mt-1 w-48 rounded-md shadow-lg z-10 ${theme === 'dark' ? 'bg-gray-700' : 'bg-white'
-                  } ring-1 ring-black ring-opacity-5`}>
-                  <div className="py-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onView(connection);
-                      }}
-                      className={`flex items-center w-full px-4 py-2 text-sm ${theme === 'dark'
-                        ? 'text-gray-200 hover:bg-gray-600'
-                        : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                    >
-                      <ExternalLink size={16} className="mr-2" />
-                      {t('connectionList.view')}
-                    </button>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit(connection);
-                      }}
-                      className={`flex items-center w-full px-4 py-2 text-sm ${theme === 'dark'
-                        ? 'text-gray-200 hover:bg-gray-600'
-                        : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                    >
-                      <Edit size={16} className="mr-2" />
-                      {t('connectionList.edit')}
-                    </button>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleActive(connection.id, connection.active);
-                      }}
-                      disabled={isToggling === connection.id}
-                      className={`flex items-center w-full px-4 py-2 text-sm ${theme === 'dark'
-                        ? 'text-gray-200 hover:bg-gray-600'
-                        : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                    >
-                      {isToggling === connection.id ? (
-                        <Loader size={16} className="animate-spin mr-2" />
-                      ) : connection.active ? (
-                        <PowerOff size={16} className="mr-2" />
-                      ) : (
-                        <Power size={16} className="mr-2" />
-                      )}
-                      {connection.active
-                        ? t('connectionList.deactivate')
-                        : t('connectionList.activate')}
-                    </button>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(connection.id);
-                      }}
-                      disabled={isDeleting === connection.id}
-                      className={`flex items-center w-full px-4 py-2 text-sm ${theme === 'dark'
-                        ? 'text-red-400 hover:bg-gray-600'
-                        : 'text-red-600 hover:bg-gray-100'
-                        }`}
-                    >
-                      {isDeleting === connection.id ? (
-                        <Loader size={16} className="animate-spin mr-2" />
-                      ) : (
-                        <Trash2 size={16} className="mr-2" />
-                      )}
-                      {t('connectionList.delete')}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {connection.description && (
-            <p className={`mt-2 text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
-              {connection.description}
-            </p>
-          )}
-
-          <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex justify-between items-center">
-              <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                {t('connectionList.created')}: {formatDate(connection.created_at)}
-              </div>
-
-              <div className="flex items-center">
-                <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${connection.active
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:bg-opacity-30 dark:text-green-300'
-                    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                    }`}
-                >
-                  {connection.active
-                    ? t('connectionList.statusActive')
-                    : t('connectionList.statusInactive')}
-                </span>
-              </div>
-            </div>
-          </div>
+    <div className="p-6">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+            {t('navigation.connections')}
+          </h1>
+          <p className={`mt-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+            {t('connections.description')}
+          </p>
         </div>
-      ))}
+        <div className="mt-4 sm:mt-0">
+          <Link to="/integrations">
+            <button
+              className="inline-flex items-center cursor-pointer px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              <Plus size={16} className="mr-2" />
+              {t('connections.addNew')}
+            </button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Search */}
+      <div className={`p-4 mb-6 rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} shadow-md`}>
+        <div className="relative max-w-xs">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search size={18} className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} />
+          </div>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={`block w-full pl-10 pr-3 py-2 border rounded-md ${theme === 'dark'
+              ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-green-500 focus:ring-green-500'
+              : 'border-gray-300 placeholder-gray-500 focus:border-green-500 focus:ring-green-500'
+              }`}
+            placeholder={t('connections.searchPlaceholder')}
+          />
+        </div>
+      </div>
+
+      {/* Connections */}
+      <ConnectionList connections={filteredConnections} />
+
+      {filteredConnections.length === 0 && (
+        <div className={`text-center py-12 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+          <p className="text-lg font-medium">{t('connections.noResults')}</p>
+          <p className="mt-1">{t('connections.tryDifferentSearch')}</p>
+        </div>
+      )}
     </div>
   );
 };
 
-export default ConnectionList;
+export default Connections;
+

@@ -4,9 +4,11 @@ package schema
 func AllSchemas() []string {
 	return []string{
 		TransformersTableSchema,
-		ConnectionsTableSchema,
-		APIConnectionsTableSchema,
-		APIConnectionConfigSchema,
+		CredentialsTableSchema,
+		CredentialsConfigSchema,
+		CredentialsRelations,
+		CredentialsRelationsLogs,
+		MappingsTableSchema,
 		ExecutionsTableSchema,
 		UsersTableSchema,
 	}

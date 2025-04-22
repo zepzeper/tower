@@ -1,8 +1,9 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
+import { authService } from '../../services/authService';
 import { Zap } from 'lucide-react';
 
 const ResetPassword: React.FC = () => {
@@ -12,7 +13,6 @@ const ResetPassword: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -44,8 +44,7 @@ const ResetPassword: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Simulate a success response after 1 second
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await authService.resetPassword(token, password);
       setIsSuccess(true);
     } catch (err: any) {
       setError(err.message || t('auth.resetPassword.genericError'));

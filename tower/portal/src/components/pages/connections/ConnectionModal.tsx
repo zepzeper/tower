@@ -110,6 +110,7 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
           value: template.default || '',
           isSecret: template.type === 'secret'
         }));
+        setName(typeInfo.name)
         setConfigFields(newConfigFields);
       }
     };
@@ -207,7 +208,7 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
 
     try {
       const connectionData: ApiConnectionCreateRequest = {
-        name,
+        name: name,
         description: description || undefined,
         type: selectedType,
         configs: configFields.map(field => ({

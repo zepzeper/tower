@@ -1,6 +1,7 @@
 package dto
 
 type RegisterRequest struct {
+	Name     string `json:"name" validate:"required,min=2"`
 	Email    string `json:"email" validate:"required,email,min=8"`
 	Password string `json:"password" validate:"required,min=8"`
 }
@@ -17,6 +18,7 @@ type AuthResponse struct {
 
 type UserResponse struct {
 	ID        string `json:"id"`
+	Name      string `json:"name"`
 	Email     string `json:"email"`
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at,omitempty"`
@@ -25,4 +27,8 @@ type UserResponse struct {
 type RegisterResponse struct {
 	Message string       `json:"message"`
 	User    UserResponse `json:"user"`
+}
+
+type RefreshTokenResponse struct {
+	Token string `json:"token"`
 }

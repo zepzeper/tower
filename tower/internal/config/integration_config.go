@@ -10,9 +10,9 @@ import (
 
 // IntegrationConfig holds configuration for API integrations
 type IntegrationConfig struct {
-	Connections   []ConnectionConfig   `json:"connections"`
-	Transformers  []TransformerConfig  `json:"transformers"`
-	AdapterMappings []AdapterMapping   `json:"adapterMappings"`
+	Connections     []ConnectionConfig  `json:"connections"`
+	Transformers    []TransformerConfig `json:"transformers"`
+	AdapterMappings []AdapterMapping    `json:"adapterMappings"`
 }
 
 // ConnectionConfig defines a connection between two APIs
@@ -52,29 +52,29 @@ type Function struct {
 
 // AdapterMapping defines field mappings for an adapter
 type AdapterMapping struct {
-	AdapterName string                  `json:"adapterName"`
-	EntityType  string                  `json:"entityType"`
-	Mappings    []AdapterFieldMapping   `json:"mappings"`
+	AdapterName string                `json:"adapterName"`
+	EntityType  string                `json:"entityType"`
+	Mappings    []AdapterFieldMapping `json:"mappings"`
 }
 
 // AdapterFieldMapping defines how to map a field for an adapter
 type AdapterFieldMapping struct {
-	SourceField      string `json:"sourceField"`
-	CanonicalField   string `json:"canonicalField"`
-	IsRequired       bool   `json:"isRequired"`
-	DefaultValue     string `json:"defaultValue,omitempty"`
-	TransformToCanon string `json:"transformToCanon,omitempty"`
+	SourceField        string `json:"sourceField"`
+	CanonicalField     string `json:"canonicalField"`
+	IsRequired         bool   `json:"isRequired"`
+	DefaultValue       string `json:"defaultValue,omitempty"`
+	TransformToCanon   string `json:"transformToCanon,omitempty"`
 	TransformFromCanon string `json:"transformFromCanon,omitempty"`
 }
 
 // LoadIntegrationConfig loads integration configuration from JSON files
 func LoadIntegrationConfig(configDir string) (*IntegrationConfig, error) {
 	config := &IntegrationConfig{
-		Connections:    make([]ConnectionConfig, 0),
-		Transformers:   make([]TransformerConfig, 0),
+		Connections:     make([]ConnectionConfig, 0),
+		Transformers:    make([]TransformerConfig, 0),
 		AdapterMappings: make([]AdapterMapping, 0),
 	}
-	
+
 	// Load connections
 	connectionsPath := filepath.Join(configDir, "connections.json")
 	if fileExists(connectionsPath) {
@@ -84,7 +84,7 @@ func LoadIntegrationConfig(configDir string) (*IntegrationConfig, error) {
 		}
 		config.Connections = connections
 	}
-	
+
 	// Load transformers
 	transformersPath := filepath.Join(configDir, "transformers.json")
 	if fileExists(transformersPath) {
@@ -94,7 +94,7 @@ func LoadIntegrationConfig(configDir string) (*IntegrationConfig, error) {
 		}
 		config.Transformers = transformers
 	}
-	
+
 	// Load adapter mappings
 	adapterMappingsPath := filepath.Join(configDir, "adapter_mappings.json")
 	if fileExists(adapterMappingsPath) {
@@ -104,7 +104,7 @@ func LoadIntegrationConfig(configDir string) (*IntegrationConfig, error) {
 		}
 		config.AdapterMappings = adapterMappings
 	}
-	
+
 	return config, nil
 }
 
@@ -114,13 +114,13 @@ func loadConnectionsConfig(path string) ([]ConnectionConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var connections []ConnectionConfig
 	err = json.Unmarshal(data, &connections)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return connections, nil
 }
 
@@ -129,13 +129,13 @@ func loadTransformersConfig(path string) ([]TransformerConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var transformers []TransformerConfig
 	err = json.Unmarshal(data, &transformers)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return transformers, nil
 }
 
@@ -144,13 +144,13 @@ func loadAdapterMappingsConfig(path string) ([]AdapterMapping, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var adapterMappings []AdapterMapping
 	err = json.Unmarshal(data, &adapterMappings)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return adapterMappings, nil
 }
 
@@ -160,7 +160,7 @@ func SaveIntegrationConfig(configDir string, config *IntegrationConfig) error {
 	if err := os.MkdirAll(configDir, 0755); err != nil {
 		return fmt.Errorf("error creating config directory: %w", err)
 	}
-	
+
 	// Save connections
 	if len(config.Connections) > 0 {
 		connectionsPath := filepath.Join(configDir, "connections.json")
@@ -169,7 +169,7 @@ func SaveIntegrationConfig(configDir string, config *IntegrationConfig) error {
 			return fmt.Errorf("error saving connections config: %w", err)
 		}
 	}
-	
+
 	// Save transformers
 	if len(config.Transformers) > 0 {
 		transformersPath := filepath.Join(configDir, "transformers.json")
@@ -178,7 +178,7 @@ func SaveIntegrationConfig(configDir string, config *IntegrationConfig) error {
 			return fmt.Errorf("error saving transformers config: %w", err)
 		}
 	}
-	
+
 	// Save adapter mappings
 	if len(config.AdapterMappings) > 0 {
 		adapterMappingsPath := filepath.Join(configDir, "adapter_mappings.json")
@@ -187,7 +187,7 @@ func SaveIntegrationConfig(configDir string, config *IntegrationConfig) error {
 			return fmt.Errorf("error saving adapter mappings config: %w", err)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -197,7 +197,7 @@ func saveToJSONFile(path string, data interface{}) error {
 	if err != nil {
 		return err
 	}
-	
+
 	return ioutil.WriteFile(path, jsonData, 0644)
 }
 

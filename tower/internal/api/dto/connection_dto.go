@@ -51,15 +51,15 @@ type SetActiveRequest struct {
 
 // ExecutionResponse represents the response for an execution
 type ExecutionResponse struct {
-	ID           string                 `json:"id"`
-	ConnectionID string                 `json:"connectionId"`
-	Status       string                 `json:"status"`
-	StartTime    time.Time              `json:"startTime"`
-	EndTime      *time.Time             `json:"endTime,omitempty"`
-	SourceData   interface{}            `json:"sourceData,omitempty"`
-	TargetData   interface{}            `json:"targetData,omitempty"`
-	Error        string                 `json:"error,omitempty"`
-	CreatedAt    time.Time              `json:"createdAt"`
+	ID           string      `json:"id"`
+	ConnectionID string      `json:"connectionId"`
+	Status       string      `json:"status"`
+	StartTime    time.Time   `json:"startTime"`
+	EndTime      *time.Time  `json:"endTime,omitempty"`
+	SourceData   interface{} `json:"sourceData,omitempty"`
+	TargetData   interface{} `json:"targetData,omitempty"`
+	Error        string      `json:"error,omitempty"`
+	CreatedAt    time.Time   `json:"createdAt"`
 }
 
 // ExecutionListResponse represents the response for listing executions

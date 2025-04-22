@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
+import { authService } from '../../services/authService';
 import { Zap } from 'lucide-react';
 
 const ForgotPassword = () => {
@@ -13,21 +14,16 @@ const ForgotPassword = () => {
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
-      // Replace with your actual API call
-      // await api.post('/auth/forgot-password', { email });
-
-      // For demo purposes, simulate success after 1 second
-      setTimeout(() => {
-        setIsSubmitted(true);
-      }, 1000);
-    } catch (err) {
-      setError(t('auth.forgotPassword.failedToSendReset'));
+      await authService.forgotPassword(email);
+      setIsSubmitted(true);
+    } catch (err: any) {
+      setError(err.message || t('auth.forgotPassword.failedToSendReset'));
     } finally {
       setIsLoading(false);
     }
@@ -110,8 +106,8 @@ const ForgotPassword = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={`appearance-none block w-full px-3 py-2 border ${theme === 'light'
-                      ? 'border-gray-300 placeholder-gray-400 text-gray-900 focus:ring-green-500 focus:border-green-500 bg-white'
-                      : 'border-gray-700 placeholder-gray-500 text-white focus:ring-green-500 focus:border-green-500 bg-gray-800'
+                    ? 'border-gray-300 placeholder-gray-400 text-gray-900 focus:ring-green-500 focus:border-green-500 bg-white'
+                    : 'border-gray-700 placeholder-gray-500 text-white focus:ring-green-500 focus:border-green-500 bg-gray-800'
                     } rounded-md shadow-sm focus:outline-none sm:text-sm`}
                   placeholder={t('auth.forgotPassword.emailLabel')}
                 />
@@ -123,8 +119,8 @@ const ForgotPassword = () => {
                 type="submit"
                 disabled={isLoading}
                 className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${theme === 'light'
-                    ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
-                    : 'bg-green-600 hover:bg-green-700 focus:ring-green-400'
+                  ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
+                  : 'bg-green-600 hover:bg-green-700 focus:ring-green-400'
                   } focus:outline-none focus:ring-2 focus:ring-offset-2`}
               >
                 {isLoading ? t('auth.forgotPassword.sending') : t('auth.forgotPassword.sendResetLink')}

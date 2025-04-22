@@ -10,6 +10,7 @@ import (
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
+	Auth     AuthConfig
 }
 
 // ServerConfig holds server configuration
@@ -41,6 +42,7 @@ func Load() (*Config, error) {
 			User:     getEnv("DB_USER", "postgres"),
 			Password: getEnv("DB_PASSWORD", "postgres"),
 		},
+		Auth: DefaultAuthConfig(),
 	}
 
 	return config, nil
@@ -60,11 +62,11 @@ func getEnvInt(key string, defaultValue int) int {
 	if valueStr == "" {
 		return defaultValue
 	}
-	
+
 	if value, err := strconv.Atoi(valueStr); err == nil {
 		return value
 	}
-	
+
 	return defaultValue
 }
 

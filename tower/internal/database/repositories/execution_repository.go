@@ -26,10 +26,10 @@ func (r *ExecutionRepository) Create(execution models.Execution) error {
 		INSERT INTO executions (id, connection_id, status, start_time, end_time, source_data, target_data, error, created_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
-	
+
 	now := time.Now()
 	execution.CreatedAt = now
-	
+
 	_, err := r.db.Exec(
 		query,
 		execution.ID,
@@ -42,7 +42,7 @@ func (r *ExecutionRepository) Create(execution models.Execution) error {
 		execution.Error,
 		execution.CreatedAt,
 	)
-	
+
 	return err
 }
 
@@ -53,7 +53,7 @@ func (r *ExecutionRepository) GetByID(id string) (models.Execution, error) {
 		FROM executions
 		WHERE id = $1
 	`
-	
+
 	var execution models.Execution
 	err := r.db.QueryRow(query, id).Scan(
 		&execution.ID,
@@ -66,14 +66,14 @@ func (r *ExecutionRepository) GetByID(id string) (models.Execution, error) {
 		&execution.Error,
 		&execution.CreatedAt,
 	)
-	
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return execution, fmt.Errorf("execution not found: %s", id)
 		}
 		return execution, err
 	}
-	
+
 	return execution, nil
 }
 
@@ -86,13 +86,13 @@ func (r *ExecutionRepository) GetByConnectionID(connectionID string, limit, offs
 		ORDER BY start_time DESC
 		LIMIT $2 OFFSET $3
 	`
-	
+
 	rows, err := r.db.Query(query, connectionID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	
+
 	var executions []models.Execution
 	for rows.Next() {
 		var execution models.Execution
@@ -111,11 +111,11 @@ func (r *ExecutionRepository) GetByConnectionID(connectionID string, limit, offs
 		}
 		executions = append(executions, execution)
 	}
-	
+
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
-	
+
 	return executions, nil
 }
 
@@ -126,12 +126,12 @@ func (r *ExecutionRepository) UpdateStatus(id, status string, endTime time.Time,
 		SET status = $1, end_time = $2, target_data = $3, error = $4
 		WHERE id = $5
 	`
-	
+
 	var sqlError sql.NullString
 	if errorMsg != "" {
 		sqlError = sql.NullString{String: errorMsg, Valid: true}
 	}
-	
+
 	result, err := r.db.Exec(
 		query,
 		status,
@@ -140,20 +140,20 @@ func (r *ExecutionRepository) UpdateStatus(id, status string, endTime time.Time,
 		sqlError,
 		id,
 	)
-	
+
 	if err != nil {
 		return err
 	}
-	
+
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		return err
 	}
-	
+
 	if rowsAffected == 0 {
 		return fmt.Errorf("execution not found: %s", id)
 	}
-	
+
 	return nil
 }
 
@@ -165,13 +165,13 @@ func (r *ExecutionRepository) GetRecentExecutions(limit, offset int) ([]models.E
 		ORDER BY start_time DESC
 		LIMIT $1 OFFSET $2
 	`
-	
+
 	rows, err := r.db.Query(query, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	
+
 	var executions []models.Execution
 	for rows.Next() {
 		var execution models.Execution
@@ -190,10 +190,10 @@ func (r *ExecutionRepository) GetRecentExecutions(limit, offset int) ([]models.E
 		}
 		executions = append(executions, execution)
 	}
-	
+
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
-	
+
 	return executions, nil
 }

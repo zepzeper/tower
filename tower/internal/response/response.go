@@ -5,56 +5,100 @@ import (
 	"net/http"
 )
 
-// Response is a standard API response structure
+// Standard response structure
 type Response struct {
 	Success bool        `json:"success"`
+	Message string      `json:"message,omitempty"`
 	Data    interface{} `json:"data,omitempty"`
 	Error   string      `json:"error,omitempty"`
-	Meta    interface{} `json:"meta,omitempty"`
 }
 
-// JSON sends a JSON response
+// JSON sends a JSON response with the provided data and status code
 func JSON(w http.ResponseWriter, data interface{}, status int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+
+	// If data is already a Response type, use it directly
+	if resp, ok := data.(Response); ok {
+		err := json.NewEncoder(w).Encode(resp)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// Otherwise, wrap it in a success response
 	response := Response{
-		Success: status >= 200 && status < 300,
+		Success: true,
 		Data:    data,
 	}
 
-	jsonResponse(w, response, status)
+	err := json.NewEncoder(w).Encode(response)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
-// Error sends an error response
+// Success sends a success response with a message
+func Success(w http.ResponseWriter, message string, status int) {
+	JSON(w, Response{
+		Success: true,
+		Message: message,
+	}, status)
+}
+
+// Error sends an error response with the provided message and status code
 func Error(w http.ResponseWriter, message string, status int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+
 	response := Response{
 		Success: false,
 		Error:   message,
 	}
 
-	jsonResponse(w, response, status)
+	err := json.NewEncoder(w).Encode(response)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
-// Paginated sends a paginated response
-func Paginated(w http.ResponseWriter, data interface{}, page, limit, total int) {
-	meta := map[string]interface{}{
-		"page":     page,
-		"limit":    limit,
-		"total":    total,
-		"lastPage": (total + limit - 1) / limit,
-	}
-
-	response := Response{
-		Success: true,
-		Data:    data,
-		Meta:    meta,
-	}
-
-	jsonResponse(w, response, http.StatusOK)
+// Created is a helper for 201 Created responses
+func Created(w http.ResponseWriter, data interface{}) {
+	JSON(w, data, http.StatusCreated)
 }
 
-// jsonResponse sends a JSON response with the given status code
-func jsonResponse(w http.ResponseWriter, response interface{}, status int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	
-	json.NewEncoder(w).Encode(response)
+// OK is a helper for 200 OK responses
+func OK(w http.ResponseWriter, data interface{}) {
+	JSON(w, data, http.StatusOK)
+}
+
+// NoContent is a helper for 204 No Content responses
+func NoContent(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// BadRequest is a helper for 400 Bad Request responses
+func BadRequest(w http.ResponseWriter, message string) {
+	Error(w, message, http.StatusBadRequest)
+}
+
+// Unauthorized is a helper for 401 Unauthorized responses
+func Unauthorized(w http.ResponseWriter, message string) {
+	Error(w, message, http.StatusUnauthorized)
+}
+
+// Forbidden is a helper for 403 Forbidden responses
+func Forbidden(w http.ResponseWriter, message string) {
+	Error(w, message, http.StatusForbidden)
+}
+
+// NotFound is a helper for 404 Not Found responses
+func NotFound(w http.ResponseWriter, message string) {
+	Error(w, message, http.StatusNotFound)
+}
+
+// InternalServerError is a helper for 500 Internal Server Error responses
+func InternalServerError(w http.ResponseWriter, message string) {
+	Error(w, message, http.StatusInternalServerError)
 }

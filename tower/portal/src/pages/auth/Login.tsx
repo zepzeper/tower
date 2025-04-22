@@ -1,16 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../context/AuthContext';
+import { authService } from '../../services/authService';
 import { useTheme } from '../../context/ThemeContext';
 import { Zap } from 'lucide-react';
-
-interface LocationState {
-  from?: {
-    pathname: string;
-  };
-}
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>('');
@@ -19,22 +13,45 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  const from = (location.state as LocationState)?.from?.pathname || '/';
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      if (authService.isAuthenticated()) {
+        const user = await authService.getCurrentUser();
+        if (user) {
+          // If we're already authenticated and have a user, redirect
+          const from = (location.state as any)?.from?.pathname || '/';
+          navigate(from, { replace: true });
+        }
+      }
+    };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    checkAuthStatus();
+  }, [navigate, location]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
-      await login(email, password);
-      navigate(from, { replace: true });
-    } catch (err: any) {
-      setError(err.message || t('auth.login.invalidCredentials'));
+      // Login and get user
+      await authService.login(email, password);
+
+      const user = await authService.getCurrentUser();
+
+      if (user) {
+        // Redirect after confirmed login
+        const from = (location.state as any)?.from?.pathname || '/';
+        navigate(from, { replace: true });
+      } else {
+        // This should rarely happen - user logged in but getCurrentUser failed
+        setError('Successfully logged in but unable to load user profile');
+      }
+    } catch (err) {
+      setError(err.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -63,21 +80,6 @@ const Login: React.FC = () => {
           </p>
         </div>
 
-        {error && (
-          <div className={`rounded-md ${theme === 'light' ? 'bg-red-50' : 'bg-red-900 bg-opacity-20'} p-4`}>
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className={`h-5 w-5 ${theme === 'light' ? 'text-red-400' : 'text-red-500'}`} viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className={`text-sm font-medium ${theme === 'light' ? 'text-red-800' : 'text-red-300'}`}>{error}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
@@ -91,8 +93,8 @@ const Login: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${theme === 'light'
-                    ? 'border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-green-500 focus:border-green-500'
-                    : 'border-gray-700 placeholder-gray-400 text-white bg-gray-800 focus:ring-green-500 focus:border-green-500'
+                  ? 'border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-green-500 focus:border-green-500'
+                  : 'border-gray-700 placeholder-gray-400 text-white bg-gray-800 focus:ring-green-500 focus:border-green-500'
                   } rounded-t-md focus:outline-none focus:z-10 sm:text-sm`}
                 placeholder={t('auth.login.emailLabel')}
               />
@@ -108,8 +110,8 @@ const Login: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${theme === 'light'
-                    ? 'border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-green-500 focus:border-green-500'
-                    : 'border-gray-700 placeholder-gray-400 text-white bg-gray-800 focus:ring-green-500 focus:border-green-500'
+                  ? 'border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-green-500 focus:border-green-500'
+                  : 'border-gray-700 placeholder-gray-400 text-white bg-gray-800 focus:ring-green-500 focus:border-green-500'
                   } rounded-b-md focus:outline-none focus:z-10 sm:text-sm`}
                 placeholder={t('auth.login.passwordLabel')}
               />
@@ -136,13 +138,29 @@ const Login: React.FC = () => {
             </div>
           </div>
 
+
+          {error && (
+            <div className={`rounded-md ${theme === 'light' ? 'bg-red-50' : 'bg-red-900 bg-opacity-20'} p-4`}>
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className={`h-5 w-5 ${theme === 'light' ? 'text-red-400' : 'text-red-500'}`} viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className={`text-sm font-medium ${theme === 'light' ? 'text-red-800' : 'text-red-300'}`}>{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div>
             <button
               type="submit"
               disabled={isLoading}
               className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${theme === 'light'
-                  ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
-                  : 'bg-green-600 hover:bg-green-700 focus:ring-green-400'
+                ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
+                : 'bg-green-600 hover:bg-green-700 focus:ring-green-400'
                 } focus:outline-none focus:ring-2 focus:ring-offset-2`}
             >
               {isLoading ? (
@@ -163,6 +181,8 @@ const Login: React.FC = () => {
             </button>
           </div>
         </form>
+
+
       </div>
     </div>
   );

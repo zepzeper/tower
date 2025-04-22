@@ -1,3 +1,5 @@
+import { requestHandler } from '../handler/RequestHandler';
+
 let cachedConnectionTypes: ConnectionType[] | null = null;
 
 export interface ApiConnection {
@@ -20,6 +22,7 @@ export interface ApiConnectionConfig {
 }
 
 export interface ApiConnectionCreateRequest {
+  id: string;
   name: string;
   description?: string;
   type: string;
@@ -61,72 +64,60 @@ export interface ConnectionType {
   }[];
 }
 
+export interface RelationConnection {
+  initiator_id: string;
+  target_id: string;
+  active: boolean;
+  connection_type: string;
+  endpoint: string;
+}
+
+export interface RelationConnectionLogs {
+  initiator_id: string;
+  target_id: string;
+  connection_type: string;
+  message: string
+  created_at: string;
+}
+
 class ConnectionService {
-  private baseUrl: string;
-
-  constructor() {
-    this.baseUrl = '/api';
-  }
-
   async getApiConnections(): Promise<ApiConnection[]> {
-    const response = await fetch(`${this.baseUrl}/connections`);
-    if (!response.ok) throw new Error(`Failed to fetch API connections: ${response.statusText}`);
-    return await response.json();
+    return requestHandler.get<ApiConnection[]>('/connections/all');
   }
 
   async getApiConnectionWithConfig(id: string): Promise<{
     connection: ApiConnection;
     configs: ApiConnectionConfig[];
   }> {
-    const response = await fetch(`${this.baseUrl}/connections/${id}`);
-    if (!response.ok) throw new Error(`Failed to fetch API connection ${id}: ${response.statusText}`);
-    return await response.json();
+    return requestHandler.get<{
+      connection: ApiConnection;
+      configs: ApiConnectionConfig[];
+    }>(`/connections/${id}`);
   }
 
   async createApiConnection(data: ApiConnectionCreateRequest): Promise<ApiConnection> {
-    const response = await fetch(`${this.baseUrl}/connections`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) throw new Error(`Failed to create API connection: ${response.statusText}`);
-    return await response.json();
+    return requestHandler.post<ApiConnection>('/connections', data);
   }
 
   async updateApiConnection(data: ApiConnectionUpdateRequest): Promise<ApiConnection> {
-    const response = await fetch(`${this.baseUrl}/connections/${data.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) throw new Error(`Failed to update API connection ${data.id}: ${response.statusText}`);
-    return await response.json();
+    return requestHandler.patch<ApiConnection>(`/connections/patch/${data.id}`, data);
   }
 
   async deleteApiConnection(id: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/connections/${id}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) throw new Error(`Failed to delete API connection ${id}: ${response.statusText}`);
+    return requestHandler.delete(`/connections/delete/${id}`);
   }
 
-  async testApiConnection(data: ApiConnectionCreateRequest): Promise<{
+  async testApiConnection(id: string): Promise<{
     success: boolean;
     message: string;
   }> {
-    const response = await fetch(`${this.baseUrl}/connections/test`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    const result = await response.json();
-    if (!response.ok) return { success: false, message: result.message || `Request failed with status: ${response.status}` };
-    return result;
+    return requestHandler.get<{ success: boolean; message: string }>(`/connections/test/${id}`);
   }
 
   async getConnectionTypesFromFile(): Promise<ConnectionType[]> {
     if (cachedConnectionTypes) return cachedConnectionTypes;
 
+    // This one still uses fetch directly since it's accessing a local file, not an API endpoint
     const res = await fetch('/schema/apis.json');
     if (!res.ok) throw new Error('Failed to load connection types');
 
@@ -136,11 +127,39 @@ class ConnectionService {
   }
 
   async initiateOAuthFlow(connectionType: string): Promise<{ url: string }> {
-    const response = await fetch(`${this.baseUrl}/oauth/${connectionType}/initiate`, {
-      method: 'POST',
-    });
-    if (!response.ok) throw new Error(`Failed to initiate OAuth flow: ${response.statusText}`);
-    return await response.json();
+    return requestHandler.post<{ url: string }>(`/oauth/${connectionType}/initiate`, {});
+  }
+
+
+  async getRelationConnections(connectionId: string): Promise<RelationConnection[]> {
+    return requestHandler.get<RelationConnection[]>(`/connections/${connectionId}/relations`);
+  }
+
+  async addRelationConnection(
+    relationData: RelationConnection
+  ): Promise<RelationConnection> {
+    return requestHandler.post<RelationConnection>(
+      `/connections/${relationData.initiator_id}/relations/create`,
+      relationData
+    );
+  }
+
+  async updateRelationConnection(
+    relationData: RelationConnection
+  ): Promise<RelationConnection> {
+    return requestHandler.patch<RelationConnection>(
+      `/connections/${relationData.initiator_id}/relations/${relationData.target_id}`,
+      relationData
+    );
+  }
+
+  async deleteRelationConnection(connectionId: string, relationId: string): Promise<void> {
+    return requestHandler.delete(`/connections/${connectionId}/relations/${relationId}`);
+  }
+
+
+  async getRelationConnectionLogs(connectionId: string): Promise<RelationConnectionLogs[]> {
+    return requestHandler.get(`/connections/${connectionId}/relations/logs`);
   }
 
 }

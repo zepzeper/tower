@@ -12,7 +12,7 @@ export default defineConfig({
     host: '0.0.0.0', // This allows connections from other hostnames
     allowedHosts: ['dev.local', 'portal.dev.local', 'localhost'],
     proxy: {
-      '/api': 'http://localhost:8080/internal',
+      '/api': 'http://localhost:8080',
     }
   },
   build: {

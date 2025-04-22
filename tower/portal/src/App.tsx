@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Layout from './components/Layout';
 import Login from './pages/auth/Login';
@@ -7,7 +6,7 @@ import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import LanguageWrapper from './components/LanguageWrapper';
-
+import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
 import Connections from './pages/Connections';
 import Integrations from './pages/Integrations';
@@ -15,32 +14,41 @@ import ConnectionDetails from './pages/connections/ConnectionDetails';
 import ConnectionEdit from './pages/connections/ConnectionEdit';
 import Analytics from './pages/Analytics';
 import Users from './pages/Users';
-
-import React from 'react';
-
-interface ProtectedRouteProps {
-  children: React.ReactElement;
-}
-
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
-};
+import React, { useState, useEffect } from 'react';
+import { authService } from './services/authService';
 
 const App: React.FC = () => {
+  const [isAuthInitialized, setIsAuthInitialized] = useState(false);
+
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        // This will try to load the user from token if one exists
+        await authService.initialize();
+      } catch (error) {
+        console.error("Auth initialization failed:", error);
+      } finally {
+        setIsAuthInitialized(true);
+      }
+    };
+
+    initAuth();
+  }, []);
+
+  // Show a loading state while auth is initializing
+  if (!isAuthInitialized) {
+    return (
+      <ThemeProvider>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-xl">Loading...</div>
+        </div>
+      </ThemeProvider>
+    );
+  }
+
   return (
     <ThemeProvider>
       <LanguageWrapper />
-
       <Routes>
         {['', '/:lang'].map((langPath) => (
           <Route key={langPath} path={langPath}>
@@ -49,14 +57,13 @@ const App: React.FC = () => {
             <Route path="register" element={<Register />} />
             <Route path="forgot-password" element={<ForgotPassword />} />
             <Route path="reset-password" element={<ResetPassword />} />
-
             {/* Protected routes */}
             <Route
               path=""
               element={
-                //<ProtectedRoute>
+                <ProtectedRoute>
                   <Layout />
-                //</ProtectedRoute>
+                </ProtectedRoute>
               }
             >
               <Route index element={<Dashboard />} />
@@ -69,7 +76,6 @@ const App: React.FC = () => {
             </Route>
           </Route>
         ))}
-
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

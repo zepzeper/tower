@@ -8,7 +8,8 @@ import (
 type Factory struct {
 	db              *sql.DB
 	transformerRepo *TransformerRepository
-	connectionRepo  *APIConnectionRepository
+	credentialsRepo *CredentialsRepository
+	relationsRepo   *RelationsRepository
 	executionRepo   *ExecutionRepository
 	authRepo        *AuthRepository
 }
@@ -29,11 +30,19 @@ func (f *Factory) Transformer() *TransformerRepository {
 }
 
 // Connection returns a connection repository
-func (f *Factory) Connection() *APIConnectionRepository {
-	if f.connectionRepo == nil {
-		f.connectionRepo = NewAPIConnectionRepository(f.db)
+func (f *Factory) Connection() *CredentialsRepository {
+	if f.credentialsRepo == nil {
+		f.credentialsRepo = NewCredentialsRepository(f.db)
 	}
-	return f.connectionRepo
+	return f.credentialsRepo
+}
+
+// Relations return a relation repository
+func (f *Factory) Relations() *RelationsRepository {
+	if f.relationsRepo == nil {
+		f.relationsRepo = NewRelationsRepository(f.db)
+	}
+	return f.relationsRepo
 }
 
 // Execution returns an execution repository

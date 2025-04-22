@@ -1,12 +1,45 @@
 [
   {
+    "id": "brincr",
+    "name": "Brincr",
+    "description": "Connect to Brincr",
+    "category": "erp",
+    "categoryName": "ERP",
+    "popular": true,
+    "imageUrl": "/images/integrations/brincr.png",
+    "authType": "api_key",
+    "configTemplate": [
+      {
+        "key": "tenant_id",
+        "name": "Tenant id",
+        "description": "The tenant id of Brincr",
+        "type": "string",
+        "required": true
+      },
+      {
+        "key": "client_id",
+        "name": "Client id",
+        "description": "The client id of Brincr",
+        "type": "string",
+        "required": true
+      },
+      {
+        "key": "client_secret",
+        "name": "Client secret",
+        "description": "The client secret of Brincr",
+        "type": "secret",
+        "required": true
+      }
+    ]
+  },
+  {
     "id": "woocommerce",
     "name": "WooCommerce",
     "description": "Connect to a WooCommerce store",
     "category": "ecommerce",
     "categoryName": "E-commerce",
-    "popular": true,
-    "imageUrl": "/images/integrations/woocommerce.png",
+    "popular": false,
+    "imageUrl": "/images/integrations/woocommerce.svg",
     "authType": "api_key",
     "configTemplate": [
       {
@@ -17,23 +50,64 @@
         "required": true
       },
       {
-        "key": "key",
+        "key": "public_key",
         "name": "Public key",
         "description": "The public key of your WooCommerce store",
         "type": "string",
+        "required": true
+      },
+      {
+        "key": "private_key",
+        "name": "Private key",
+        "description": "The private key of your WooCommerce store",
+        "type": "secret",
         "required": true
       }
     ]
   },
   {
-    "id": "shopify",
-    "name": "Shopify",
-    "description": "Connect to a Shopify store",
-    "category": "ecommerce",
-    "categoryName": "E-commerce",
+    "id": "effectconnect",
+    "name": "EffectConnect",
+    "description": "Connect to EffectConnect",
+    "category": "overig",
+    "categoryName": "Overig",
     "popular": true,
-    "imageUrl": "/images/integrations/shopify.png",
-    "authType": "oauth2",
-    "configTemplate": []
+    "imageUrl": "/images/integrations/effectconnect.png",
+    "authType": "api_key",
+    "configTemplate": [
+      {
+        "key": "public_key",
+        "name": "Public key",
+        "description": "The public key of EffectConnect",
+        "type": "string",
+        "required": true
+      },
+      {
+        "key": "private_key",
+        "name": "Private key",
+        "description": "The private key of EffectConnect",
+        "type": "secret",
+        "required": true
+      }
+    ]
+  },
+  {
+    "id": "channable",
+    "name": "Channable",
+    "description": "Connect to Channable",
+    "category": "overig",
+    "categoryName": "Overig",
+    "popular": true,
+    "imageUrl": "/images/integrations/channable.svg",
+    "authType": "token",
+    "configTemplate": [
+      {
+        "key": "key",
+        "name": "Token",
+        "description": "The token of EffectConnect",
+        "type": "secret",
+        "required": true
+      }
+    ]
   }
 ]
