@@ -1,4 +1,5 @@
-import { requestHandler } from '../handler/RequestHandler';
+import RequestHandler from '../handler/RequestHandler';
+import CacheManager from './cacheService';
 
 export interface User {
   id: string;
@@ -24,8 +25,12 @@ export interface AuthResponse {
   user: User;
 }
 
-class AuthService {
+class AuthService extends RequestHandler {
   private currentUser: User | null = null;
+
+  constructor(cacheManager: CacheManager) {
+    super(cacheManager);
+  }
 
   // Store token in localStorage
   setToken(token: string): void {
@@ -59,7 +64,7 @@ class AuthService {
   // Register a new user
   async register(data: RegisterRequest): Promise<User> {
     try {
-      const result = await requestHandler.post<AuthResponse>('/auth/register', data);
+      const result = await this.post<AuthResponse>('/auth/register', data);
       this.setToken(result.token);
       this.setUser(result.user);
       return result.user;
@@ -72,7 +77,7 @@ class AuthService {
     try {
       console.log('Attempting login for:', email);
 
-      const result = await requestHandler.post<AuthResponse>('/auth/login', { email, password });
+      const result = await this.post<AuthResponse>('/auth/login', { email, password });
 
       console.log(result.user)
 
@@ -103,7 +108,7 @@ class AuthService {
   // Logout user
   async logout(): Promise<void> {
     try {
-      await requestHandler.post('/auth/logout', {});
+      await this.post('/auth/logout', {});
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -115,7 +120,7 @@ class AuthService {
   // Refresh auth token
   async refreshToken(): Promise<string | null> {
     try {
-      const result = await requestHandler.post<{ token: string }>('/auth/refresh', {});
+      const result = await this.post<{ token: string }>('/auth/refresh', {});
       this.setToken(result.token);
       return result.token;
     } catch (error) {
@@ -126,12 +131,12 @@ class AuthService {
 
   // Forgot password
   async forgotPassword(email: string): Promise<void> {
-    await requestHandler.post('/auth/forgot-password', { email });
+    await this.post('/auth/forgot-password', { email });
   }
 
   // Reset password
   async resetPassword(token: string, password: string): Promise<void> {
-    await requestHandler.post('/auth/reset-password', { token, password });
+    await this.post('/auth/reset-password', { token, password });
   }
 
   // Get current user data
@@ -147,7 +152,7 @@ class AuthService {
 
     try {
       console.log('Fetching current user from API');
-      const user = await requestHandler.get<User>('/user/me');
+      const user = await this.get<User>('/user/me');
 
       if (user) {
         console.log('User fetched successfully');
@@ -173,4 +178,4 @@ class AuthService {
 }
 
 // Create singleton instance
-export const authService = new AuthService();
+export const authService = new AuthService(new CacheManager());

@@ -1,3 +1,5 @@
+import CacheManager from '../services/cacheService';
+
 export interface ApiResponse<T> {
   data: T;
 }
@@ -5,9 +7,11 @@ export interface ApiResponse<T> {
 class RequestHandler {
   private baseUrl: string;
   private pendingRequests: Map<string, Promise<any>> = new Map();
+  protected cacheManager: CacheManager;
 
-  constructor(baseUrl: string = '/api') {
-    this.baseUrl = baseUrl;
+  constructor(cacheManager: CacheManager) {
+    this.baseUrl = '/api';
+    this.cacheManager = cacheManager;
   }
 
   private getAuthHeaders(): HeadersInit {
@@ -162,6 +166,7 @@ class RequestHandler {
       throw error;
     }
   }
+
 }
 
-export const requestHandler = new RequestHandler();
+export default RequestHandler;

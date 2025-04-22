@@ -1,4 +1,6 @@
+import RequestHandler from '../handler/RequestHandler';
 import { MappingDefinition } from '../utils/schemaTransformer';
+import CacheManager from './cacheService';
 
 export interface ConnectionSchemas {
   sourceSchema: Record<string, any>;
@@ -27,24 +29,18 @@ export interface MappingMetadata {
 /**
  * Service for fetching and caching API schemas
  */
-class SchemaService {
-  private cache: Record<string, Record<string, any>> = {};
-  private baseUrl: string;
-
-  constructor() {
-    this.baseUrl = '/api';
+class SchemaService extends RequestHandler {
+  constructor(cacheManager: CacheManager) {
+    super(cacheManager);
   }
 
-  /**
-   * Fetches source/target fields and suggested mappings from the backend
-   */
   async getConnectionSchemas(sourceType: string, targetType: string): Promise<{
     sourceFields: any[];
     targetFields: any[];
     mappings: MappingDefinition[];
   }> {
     try {
-      const response = await fetch(`${this.baseUrl}/mappings/schema?source=${sourceType}&target=${targetType}&operation=products`);
+      const response = await this.get<any>(`/mappings/schema?source=${sourceType}&target=${targetType}&operation=products`);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch backend schema mapping: ${response.statusText}`);
@@ -79,7 +75,7 @@ class SchemaService {
     mappings: MappingMetadata[]
   ): Promise<{ sourceData: any, transformedData: any }> {
     try {
-      const response = await fetch(`${this.baseUrl}/mappings/test`, {
+      const response = await this.post<any>(`/mappings/test`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -144,4 +140,4 @@ class SchemaService {
   }
 }
 
-export default new SchemaService();
+export default new SchemaService(new CacheManager());
