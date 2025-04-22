@@ -29,7 +29,7 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
   onClose,
   onSuccess
 }) => {
-  const { t } = useTranslation('components');
+  const { t } = useTranslation('pages');
   const { theme } = useTheme();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -70,7 +70,7 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
     const loadConnection = async () => {
       setLoading(true);
       try {
-        const { connection, configs } = await connectionService.getApiConnectionWithConfig(connectionId);
+        const { connection, configs } = await connectionService.getApiConnectionWithConfig(connectionId!);
         setName(connection.name);
         setDescription(connection.description || '');
         setSelectedType(connection.type);
@@ -94,7 +94,7 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
 
       if (isEditMode) {
         try {
-          const { connection, configs } = await connectionService.getApiConnectionWithConfig(connectionId);
+          const { connection, configs } = await connectionService.getApiConnectionWithConfig(connectionId!);
           const newConfigFields = typeInfo.configTemplate.map(template => ({
             ...template,
             value: configs.find(c => c.key === template.key)?.value || template.default || '',
@@ -125,7 +125,10 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
       // You'll need to implement a way to listen for the OAuth callback
       // This typically involves polling or websockets
     } catch (error) {
-      setTestResult({ status: 'error', message: error instanceof Error ? error.message : 'Failed to initiate OAuth flow' });
+      setTestResult({
+        status: 'error',
+        message: error instanceof Error ? error.message : t('connectionModal.oauthError', 'Failed to initiate OAuth flow')
+      });
     }
   };
 
@@ -173,7 +176,6 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
     const requiredFieldsValid = configFields
       .filter(field => field.required)
       .every(field => field.value.trim() !== '');
-
 
     return requiredFieldsValid;
   };
@@ -226,7 +228,7 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
     } catch (error) {
       setTestResult({
         status: 'error',
-        message: t('connectionModal.testError')
+        message: t('connectionModal.testError', 'Failed to test connection')
       });
     } finally {
       setTesting(false);
@@ -270,12 +272,46 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
                       : 'border-gray-300 text-gray-900'
                       }`}
                   >
+                    <option value="">{t('connectionModal.selectType')}</option>
                     {connectionTypes.map(type => (
                       <option key={type.id} value={type.id}>{type.name}</option>
                     ))}
                   </select>
                 </div>
               )}
+
+              {/* Name and Description */}
+              <div>
+                <label className={`block mb-2 text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
+                  {t('connectionModal.nameLabel')} *
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={t('connectionModal.namePlaceholder')}
+                  className={`w-full px-3 py-2 border rounded-md ${theme === 'dark'
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                    : 'border-gray-300 text-gray-900 placeholder-gray-500'
+                    }`}
+                />
+              </div>
+
+              <div>
+                <label className={`block mb-2 text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
+                  {t('connectionModal.descriptionLabel')}
+                </label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder={t('connectionModal.descriptionPlaceholder')}
+                  rows={3}
+                  className={`w-full px-3 py-2 border rounded-md ${theme === 'dark'
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                    : 'border-gray-300 text-gray-900 placeholder-gray-500'
+                    }`}
+                />
+              </div>
 
               {/* OAuth Connect Button */}
               {currentAuthType === 'oauth2' && !isEditMode && (
@@ -340,18 +376,18 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
         <div className="flex justify-between p-4 border-t border-gray-200 dark:border-gray-700">
           <button
             onClick={handleTestConnection}
-            disabled={saving || loading}
-            className="px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-md hover:bg-gray-700 disabled:opacity-50"
+            disabled={saving || loading || testing}
+            className="px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-md hover:bg-gray-700 disabled:opacity-50 flex items-center"
           >
-            {saving ? <Loader size={16} className="animate-spin mr-2" /> : null}
+            {testing && <Loader size={16} className="animate-spin mr-2" />}
             {t('connectionModal.testConnection')}
           </button>
           <button
             onClick={handleSaveConnection}
-            disabled={saving || loading}
-            className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50"
+            disabled={saving || loading || testing}
+            className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center"
           >
-            {saving ? <Loader size={16} className="animate-spin mr-2" /> : null}
+            {saving && <Loader size={16} className="animate-spin mr-2" />}
             {isEditMode ? t('connectionModal.updateConnection') : t('connectionModal.saveConnection')}
           </button>
         </div>

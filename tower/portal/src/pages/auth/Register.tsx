@@ -20,12 +20,11 @@ const Register: React.FC = () => {
     password: '',
     confirmPassword: '',
   });
-
+  const { t } = useTranslation('pages');
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
   const { theme } = useTheme();
-  const { t } = useTranslation();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

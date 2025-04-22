@@ -47,6 +47,21 @@ const ConnectionList: React.FC<ConnectionListProps> = ({ connections }) => {
 
   const toggleDropdown = (id: string) => setActiveDropdown(prev => (prev === id ? null : id));
 
+  if (connections.length === 0) {
+    return (
+      <div className={`p-8 text-center ${theme === 'dark' ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-600'} rounded-lg shadow`}>
+        <h3 className="text-xl font-medium mb-2">{t('connectionList.noConnectionsTitle')}</h3>
+        <p className="mb-4">{t('connectionList.noConnectionsDescription')}</p>
+        <Link to="/integrations">
+          <button className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 inline-flex items-center">
+            <Plus size={16} className="mr-2" />
+            {t('connectionList.createNewConnection')}
+          </button>
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {connections.map(connection => (

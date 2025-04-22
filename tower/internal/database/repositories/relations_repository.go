@@ -74,7 +74,7 @@ func (r *RelationsRepository) GetByInitiatorID(initiatorID string) ([]dto.Creden
 
 func (r *RelationsRepository) GetLogsByInitiatorID(initiatorID string) ([]dto.CredentialsRelationLogsResponse, error) {
 	query := `
-		SELECT id, initiator_id, target_id, message, created_at
+		SELECT id, initiator_id, target_id, connection_type, message, created_at
 		FROM credentials_connections_logs
 		WHERE initiator_id = $1
 	`
@@ -94,6 +94,7 @@ func (r *RelationsRepository) GetLogsByInitiatorID(initiatorID string) ([]dto.Cr
 			&relation.ID,
 			&relation.InitiatorID,
 			&relation.TargetID,
+			&relation.ConnectionType,
 			&relation.Message,
 			&relation.CreatedAt,
 		); err != nil {

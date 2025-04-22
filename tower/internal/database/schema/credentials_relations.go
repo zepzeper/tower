@@ -25,6 +25,7 @@ const CredentialsRelationsLogs = `
     id SERIAL PRIMARY KEY,
     initiator_id VARCHAR(50) NOT NULL,
     target_id VARCHAR(50) NOT NULL,
+    connection_type connection_type NOT NULL,
     message VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     FOREIGN KEY (initiator_id) REFERENCES credentials(id) ON DELETE CASCADE,

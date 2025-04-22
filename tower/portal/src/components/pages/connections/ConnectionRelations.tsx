@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { connectionService, RelationConnection } from '../../../services/connectionService';
 import RelationModal from './RelationModal';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 interface RelationConnectionUI {
   id: string;
@@ -32,6 +34,8 @@ const ConnectionRelations: React.FC<ConnectionRelationsProps> = ({
   theme,
   formatDate
 }) => {
+  const { t } = useTranslation('pages');
+  const navigate = useNavigate();
   const [relationConnections, setRelationConnections] = useState<RelationConnectionUI[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,6 +84,10 @@ const ConnectionRelations: React.FC<ConnectionRelationsProps> = ({
     }
   };
 
+  const editRelation = (relation) => {
+    navigate(`/connections/edit/${relation.id}`);
+  };
+
   const addRelationConnection = async (relationData: RelationConnection) => {
     try {
       setAddingRelation(true);
@@ -120,7 +128,7 @@ const ConnectionRelations: React.FC<ConnectionRelationsProps> = ({
   return (
     <div className={`rounded-lg shadow-sm ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} overflow-hidden`}>
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-        <h2 className="text-lg font-medium">Relation Connections</h2>
+        <h2 className="text-lg font-medium">{t('connections.connectedIntegrations', 'Relation Connections')}</h2>
         <button
           className={`px-3 py-1 rounded-md text-sm flex items-center ${theme === 'dark'
             ? 'bg-green-600 hover:bg-green-700'
@@ -134,7 +142,7 @@ const ConnectionRelations: React.FC<ConnectionRelationsProps> = ({
           ) : (
             <Plus className="w-4 h-4 mr-1" />
           )}
-          New Relation
+          {t('connections.addConnection', 'New Relation')}
         </button>
       </div>
 
@@ -150,7 +158,7 @@ const ConnectionRelations: React.FC<ConnectionRelationsProps> = ({
       {loading ? (
         <div className="p-8 text-center">
           <Loader2 className="animate-spin h-8 w-8 mx-auto text-green-500 mb-2" />
-          <p className="text-gray-500 dark:text-gray-400">Loading relation connections...</p>
+          <p className="text-gray-500 dark:text-gray-400">{t('connections.loading', 'Loading relation connections...')}</p>
         </div>
       ) : error ? (
         <div className={`p-6 m-4 rounded-lg border ${theme === 'dark' ? 'bg-red-900/30 border-red-800 text-red-300' : 'bg-red-50 border-red-200 text-red-600'}`}>
@@ -159,17 +167,17 @@ const ConnectionRelations: React.FC<ConnectionRelationsProps> = ({
             onClick={fetchRelationConnections}
             className="mt-2 px-3 py-1 rounded-md bg-gray-600 text-white hover:bg-gray-700 text-sm"
           >
-            Retry
+            {t('common.retry', 'Retry')}
           </button>
         </div>
       ) : relationConnections.length === 0 ? (
         <div className="p-8 text-center">
-          <p className="text-gray-500 dark:text-gray-400">No relation connections found.</p>
+          <p className="text-gray-500 dark:text-gray-400">{t('connections.noConnections', 'No relation connections found.')}</p>
           <button
             className="mt-4 px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700"
             onClick={() => setIsAddModalOpen(true)}
           >
-            Add Your First Relation
+            {t('connections.addYourFirst', 'Add Your First Relation')}
           </button>
         </div>
       ) : (
@@ -178,28 +186,28 @@ const ConnectionRelations: React.FC<ConnectionRelationsProps> = ({
             <thead className={theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'}>
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Name
+                  {t('users.name', 'Name')}
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Type
+                  {t('mappings.type', 'Type')}
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Endpoint
+                  {t('mappings.endpoint', 'Endpoint')}
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Last Used
+                  {t('dashboard.lastSync', 'Last Used')}
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Status
+                  {t('users.status', 'Status')}
                 </th>
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Actions
+                  {t('users.actions', 'Actions')}
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {relationConnections.map((relation) => (
-                <tr key={relation.id} className={theme === 'dark' ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-gray-50'}>
+                <tr onClick={() => editRelation(relation)} key={relation.id} className={`${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-gray-50'} cursor-pointer`}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className={`p-2 rounded-full mr-2 ${relation.type === 'inbound'
@@ -238,20 +246,16 @@ const ConnectionRelations: React.FC<ConnectionRelationsProps> = ({
                       ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:bg-opacity-30 dark:text-green-300'
                       : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'
                       }`}>
-                      {relation.status.charAt(0).toUpperCase() + relation.status.slice(1)}
+                      {relation.status === 'active'
+                        ? t('connectionList.statusActive', 'Active')
+                        : t('connectionList.statusInactive', 'Inactive')}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end space-x-2">
                       <button
-                        className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
-                        onClick={() => {/* Implement edit functionality */ }}
-                      >
-                        <Edit size={18} />
-                      </button>
-                      <button
                         className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                        onClick={() => deleteRelationConnection(relation.id)}
+                        onClick={(e) => { e.stopPropagation(); deleteRelationConnection(relation.id) }}
                       >
                         <Trash2 size={18} />
                       </button>
@@ -262,8 +266,9 @@ const ConnectionRelations: React.FC<ConnectionRelationsProps> = ({
             </tbody>
           </table>
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 };
 

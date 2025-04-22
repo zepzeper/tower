@@ -7,6 +7,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { Zap } from 'lucide-react';
 
 const Login: React.FC = () => {
+  const { t } = useTranslation('pages');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -14,7 +15,6 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useTheme();
-  const { t } = useTranslation();
 
   useEffect(() => {
     const checkAuthStatus = async () => {

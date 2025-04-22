@@ -8,6 +8,7 @@ import {
   XCircle,
   CheckCircle
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ApiConnection, ApiConnectionConfig, ConnectionType } from '../../../services/connectionService';
 
 interface ConnectionDetailsConfigurationProps {
@@ -39,6 +40,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
   toggleShowSecret,
   showSecrets
 }) => {
+  const { t } = useTranslation('pages');
   const [newConfigKey, setNewConfigKey] = useState<string>('');
   const [newConfigValue, setNewConfigValue] = useState<string>('');
   const [newConfigIsSecret, setNewConfigIsSecret] = useState<boolean>(false);
@@ -77,10 +79,9 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
               c.key === config.key ? { ...c, value: e.target.value } : c
             ));
           }}
-          className={`w-full px-3 py-2 rounded-md border ${theme === 'dark'
-            ? 'bg-gray-700 border-gray-600 text-white'
-            : 'bg-white border-gray-300 text-gray-900'
+          className={`w-full px-3 py-2 rounded-md border ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
             } ${config.is_secret ? 'pr-10' : ''}`}
+          readOnly={!editing}
         />
         {config.is_secret && (
           <button
@@ -99,12 +100,12 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Connection Information */}
       <div className={`col-span-1 rounded-lg shadow-sm ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} p-6`}>
-        <h2 className="text-lg font-medium mb-4">Connection Information</h2>
+        <h2 className="text-lg font-medium mb-4">{t('connectionDetails.configuration', 'Connection Information')}</h2>
 
         {editing ? (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Name</label>
+              <label className="block text-sm font-medium mb-1">{t('connectionModal.nameLabel')}</label>
               <input
                 type="text"
                 value={connection.name}
@@ -117,7 +118,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Description</label>
+              <label className="block text-sm font-medium mb-1">{t('connectionModal.descriptionLabel')}</label>
               <textarea
                 value={connection.description || ''}
                 onChange={(e) => setConnection({ ...connection, description: e.target.value })}
@@ -126,7 +127,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
                   ? 'bg-gray-700 border-gray-600 text-white'
                   : 'bg-white border-gray-300 text-gray-900'
                   }`}
-                placeholder="Add a description..."
+                placeholder={t('connectionModal.descriptionPlaceholder')}
               />
             </div>
 
@@ -138,28 +139,28 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
                 onChange={(e) => setConnection({ ...connection, active: e.target.checked })}
                 className="mr-2 h-4 w-4"
               />
-              <label htmlFor="active-toggle" className="text-sm">Active</label>
+              <label htmlFor="active-toggle" className="text-sm">{t('connectionList.statusActive')}</label>
             </div>
           </div>
         ) : (
           <div className="space-y-4">
             <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Type</h3>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('connectionDetails.type')}</h3>
               <p className="mt-1">{connection.type}</p>
             </div>
 
             <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Description</h3>
-              <p className="mt-1">{connection.description || 'No description provided.'}</p>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('connectionModal.descriptionLabel')}</h3>
+              <p className="mt-1">{connection.description || t('connectionDetails.noDescription', 'No description provided.')}</p>
             </div>
 
             <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Created At</h3>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('connectionDetails.created')}</h3>
               <p className="mt-1">{formatDate(connection.created_at)}</p>
             </div>
 
             <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Last Updated</h3>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('connectionDetails.updated')}</h3>
               <p className="mt-1">{formatDate(connection.updated_at || connection.created_at)}</p>
             </div>
           </div>
@@ -172,7 +173,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
               className="w-full flex items-center justify-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
             >
               <Key className="w-4 h-4 mr-2" />
-              Authenticate with OAuth
+              {t('connectionModal.connectWithOAuth', 'Authenticate with OAuth')}
             </button>
           </div>
         )}
@@ -181,7 +182,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
       {/* Configuration */}
       <div className={`col-span-2 rounded-lg shadow-sm ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} p-6`}>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-medium">Configuration</h2>
+          <h2 className="text-lg font-medium">{t('connectionDetails.configuration')}</h2>
           {editing && (
             <button
               onClick={() => {
@@ -193,14 +194,14 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
                 }`}
             >
               <Plus className="w-4 h-4 mr-1" />
-              Add Config
+              {t('common.add', 'Add Config')}
             </button>
           )}
         </div>
 
         {configs.length === 0 ? (
           <div className={`p-8 text-center rounded-md ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'}`}>
-            <p className="text-gray-500 dark:text-gray-400">No configuration available.</p>
+            <p className="text-gray-500 dark:text-gray-400">{t('connectionDetails.noConfig')}</p>
             {editing && (
               <button
                 onClick={() => {
@@ -209,7 +210,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
                 className="mt-4 px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 inline-flex items-center"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Your First Config
+                {t('connections.addYourFirst', 'Add Your First Config')}
               </button>
             )}
           </div>
@@ -219,17 +220,17 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
               <thead className={theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'}>
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Key
+                    {t('common.key', 'Key')}
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Value
+                    {t('common.value', 'Value')}
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Type
+                    {t('common.type', 'Type')}
                   </th>
                   {editing && (
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Actions
+                      {t('users.actions')}
                     </th>
                   )}
                 </tr>
@@ -248,7 +249,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
                         ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:bg-opacity-30 dark:text-red-300'
                         : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:bg-opacity-30 dark:text-blue-300'
                         }`}>
-                        {config.is_secret ? 'Secret' : 'Plain'}
+                        {config.is_secret ? t('common.secret', 'Secret') : t('common.plain', 'Plain')}
                       </span>
                     </td>
                     {editing && (
@@ -273,12 +274,12 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
           <div id="add-config-section" className={`mt-8 p-6 rounded-lg border ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
             <h3 className="text-lg font-medium mb-4 flex items-center">
               <Plus className="w-5 h-5 mr-2" />
-              Add Configuration
+              {t('common.add', 'Add Configuration')}
             </h3>
 
             <div className="grid grid-cols-12 gap-4">
               <div className="col-span-5">
-                <label className="block text-sm font-medium mb-1">Key</label>
+                <label className="block text-sm font-medium mb-1">{t('common.key', 'Key')}</label>
                 <input
                   type="text"
                   value={newConfigKey}
@@ -292,7 +293,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
               </div>
 
               <div className="col-span-5">
-                <label className="block text-sm font-medium mb-1">Value</label>
+                <label className="block text-sm font-medium mb-1">{t('common.value', 'Value')}</label>
                 <div className="relative">
                   <input
                     type={newConfigIsSecret ? 'password' : 'text'}
@@ -302,7 +303,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
                       ? 'bg-gray-600 border-gray-500 text-white'
                       : 'bg-white border-gray-300 text-gray-900'
                       } ${newConfigIsSecret ? 'pr-10' : ''}`}
-                    placeholder="Value"
+                    placeholder={t('common.value', 'Value')}
                   />
                   {newConfigIsSecret && (
                     <button
@@ -324,7 +325,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
                     onChange={(e) => setNewConfigIsSecret(e.target.checked)}
                     className="mr-2 h-4 w-4"
                   />
-                  <span className="text-sm">Secret</span>
+                  <span className="text-sm">{t('common.secret', 'Secret')}</span>
                 </label>
               </div>
             </div>
@@ -339,7 +340,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
                   : 'bg-green-500 hover:bg-green-600 text-white'
                 }`}
             >
-              Add Configuration
+              {t('connections.addConnection', 'Add Configuration')}
             </button>
           </div>
         )}
@@ -364,7 +365,9 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
               </div>
               <div>
                 <h3 className="font-medium text-base">
-                  {testResult.success ? 'Connection Successful' : 'Connection Failed'}
+                  {testResult.success
+                    ? t('common.success', 'Connection Successful')
+                    : t('common.error', 'Connection Failed')}
                 </h3>
                 <p className="mt-1 text-sm">{testResult.message}</p>
               </div>

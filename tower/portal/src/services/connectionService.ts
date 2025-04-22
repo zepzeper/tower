@@ -73,6 +73,7 @@ export interface RelationConnection {
 }
 
 export interface RelationConnectionLogs {
+  id: number
   initiator_id: string;
   target_id: string;
   connection_type: string;

@@ -4,6 +4,7 @@ export interface ApiResponse<T> {
 
 class RequestHandler {
   private baseUrl: string;
+  private pendingRequests: Map<string, Promise<any>> = new Map();
 
   constructor(baseUrl: string = '/api') {
     this.baseUrl = baseUrl;
@@ -20,59 +21,125 @@ class RequestHandler {
     return headers;
   }
 
+  private createRequestKey(method: string, endpoint: string, data?: any): string {
+    if (data) {
+      // For methods with request bodies, include body in the key
+      return `${method}:${endpoint}:${JSON.stringify(data)}`;
+    }
+    return `${method}:${endpoint}`;
+  }
+
   async get<T>(endpoint: string): Promise<T> {
-    return this.handleUnauthorized(async () => {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        headers: this.getAuthHeaders(),
-      });
-      if (!response.ok) {
-        this.handleErrorResponse(response);
+    const requestKey = this.createRequestKey('GET', endpoint);
+
+    // If we already have a pending request for this endpoint, return that Promise
+    if (this.pendingRequests.has(requestKey)) {
+      return this.pendingRequests.get(requestKey);
+    }
+
+    const request = this.handleUnauthorized(async () => {
+      try {
+        const response = await fetch(`${this.baseUrl}${endpoint}`, {
+          headers: this.getAuthHeaders(),
+        });
+        if (!response.ok) {
+          this.handleErrorResponse(response);
+        }
+        const json: ApiResponse<T> = await response.json();
+        return json.data;
+      } finally {
+        // Remove from pending requests when done
+        this.pendingRequests.delete(requestKey);
       }
-      const json: ApiResponse<T> = await response.json();
-      return json.data;
     });
+
+    this.pendingRequests.set(requestKey, request);
+
+    return request;
   }
 
   async post<T>(endpoint: string, data: any): Promise<T> {
-    return this.handleUnauthorized(async () => {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        this.handleErrorResponse(response);
+    const requestKey = this.createRequestKey('POST', endpoint, data);
+
+    if (this.pendingRequests.has(requestKey)) {
+      return this.pendingRequests.get(requestKey);
+    }
+
+    const request = this.handleUnauthorized(async () => {
+      try {
+        const response = await fetch(`${this.baseUrl}${endpoint}`, {
+          method: 'POST',
+          headers: this.getAuthHeaders(),
+          body: JSON.stringify(data),
+        });
+        if (!response.ok) {
+          this.handleErrorResponse(response);
+        }
+        const json: ApiResponse<T> = await response.json();
+        return json.data;
+      } finally {
+        this.pendingRequests.delete(requestKey);
       }
-      const json: ApiResponse<T> = await response.json();
-      return json.data;
     });
+
+    this.pendingRequests.set(requestKey, request);
+
+    return request;
   }
 
   async patch<T>(endpoint: string, data: any): Promise<T> {
-    return this.handleUnauthorized(async () => {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        method: 'PATCH',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        this.handleErrorResponse(response);
+    const requestKey = this.createRequestKey('PATCH', endpoint, data);
+
+    if (this.pendingRequests.has(requestKey)) {
+      return this.pendingRequests.get(requestKey);
+    }
+
+    const request = this.handleUnauthorized(async () => {
+      try {
+        const response = await fetch(`${this.baseUrl}${endpoint}`, {
+          method: 'PATCH',
+          headers: this.getAuthHeaders(),
+          body: JSON.stringify(data),
+        });
+        if (!response.ok) {
+          this.handleErrorResponse(response);
+        }
+        const json: ApiResponse<T> = await response.json();
+        return json.data;
+      } finally {
+        this.pendingRequests.delete(requestKey);
       }
-      const json: ApiResponse<T> = await response.json();
-      return json.data;
     });
+
+    this.pendingRequests.set(requestKey, request);
+
+    return request;
   }
 
   async delete(endpoint: string): Promise<void> {
-    return this.handleUnauthorized(async () => {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        method: 'DELETE',
-        headers: this.getAuthHeaders(),
-      });
-      if (!response.ok) {
-        this.handleErrorResponse(response);
+    const requestKey = this.createRequestKey('DELETE', endpoint);
+
+    if (this.pendingRequests.has(requestKey)) {
+      return this.pendingRequests.get(requestKey);
+    }
+
+    const request = this.handleUnauthorized(async () => {
+      try {
+        const response = await fetch(`${this.baseUrl}${endpoint}`, {
+          method: 'DELETE',
+          headers: this.getAuthHeaders(),
+        });
+        if (!response.ok) {
+          this.handleErrorResponse(response);
+        }
+      } finally {
+        this.pendingRequests.delete(requestKey);
       }
     });
+
+    this.pendingRequests.set(requestKey, request);
+
+    return request;
   }
 
   private handleErrorResponse(response: Response): never {

@@ -15,7 +15,7 @@ const Layout = () => {
     const verifyAuth = async () => {
       setIsVerifying(true);
       try {
-        const user = await authService.getCurrentUser(true); // Force refresh
+        const user = await authService.getCurrentUser();
         if (!user) {
           navigate('/login');
         }

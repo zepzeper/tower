@@ -7,38 +7,12 @@ import MappingPanel from './mappings/MappingPanel';
 import MappingHeader from './mappings/MappingHeader';
 import MappingPreview from './mappings/MappingPreview';
 import MappingAlerts from './mappings/MappingAlerts';
-import TransformPicker from './mappings/TransformPicker';
-import {
-  FieldDefinition,
-  MappingDefinition,
-  TransformationType,
-  ConnectionDetails
-} from '../../types';
 import schemaService from '../../services/schemaService';
-import * as schemaTransformer from '../../utils/schemaTransformer';
-import {
-  ArrowLeftRight,
-  Plus,
-  Trash2,
-  Save,
-  RefreshCw,
-  ArrowRight,
-  Info,
-  AlertCircle,
-  CheckCircle,
-  ChevronDown,
-  ChevronRight,
-  Search,
-  Settings,
-  Eye,
-  Download
-} from 'lucide-react';
 
 const FieldMapping: React.FC = () => {
   const { t } = useTranslation('pages');
   const { theme } = useTheme() || {};
   const { id: connectionId } = useParams<{ id: string }>();
-  const isDarkMode = theme === 'dark';
 
   // States
   const [sourceFields, setSourceFields] = useState([]);

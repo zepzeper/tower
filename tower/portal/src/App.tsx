@@ -16,6 +16,7 @@ import Analytics from './pages/Analytics';
 import Users from './pages/Users';
 import React, { useState, useEffect } from 'react';
 import { authService } from './services/authService';
+import Account from './pages/Account';
 
 const App: React.FC = () => {
   const [isAuthInitialized, setIsAuthInitialized] = useState(false);
@@ -73,6 +74,7 @@ const App: React.FC = () => {
               <Route path="integrations" element={<Integrations />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="users" element={<Users />} />
+              <Route path="account" element={<Account />} />
             </Route>
           </Route>
         ))}

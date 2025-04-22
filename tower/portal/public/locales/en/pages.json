@@ -16,7 +16,18 @@
     "copy": "Copy",
     "show": "Show",
     "hide": "Hide",
-    "empty": "empty"
+    "empty": "empty",
+    "key": "Key",
+    "value": "Value",
+    "type": "Type",
+    "message": "Message",
+    "initiator": "Initiator",
+    "target": "Target",
+    "secret": "Secret",
+    "plain": "Plain",
+    "add": "Add",
+    "retry": "Retry",
+    "viewAll": "View All"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -38,7 +49,9 @@
     "notifications": "Notifications"
   },
   "sidebar": {
-    "logo": "Tower"
+    "logo": "Tower",
+    "admin": "Admin",
+    "adminEmail": "admin@example.com"
   },
   "settings": {
     "title": "Settings",
@@ -91,7 +104,8 @@
       "forgotPassword": "Forgot your password?",
       "signIn": "Sign in",
       "signingIn": "Signing in...",
-      "invalidCredentials": "Invalid email or password"
+      "invalidCredentials": "Invalid email or password",
+      "failed": "Login failed"
     },
     "register": {
       "title": "Create your account",
@@ -102,7 +116,8 @@
       "confirmPasswordLabel": "Confirm password",
       "createAccount": "Create account",
       "creatingAccount": "Creating account...",
-      "passwordMismatch": "Passwords do not match"
+      "passwordMismatch": "Passwords do not match",
+      "failed": "Registration failed"
     },
     "forgotPassword": {
       "title": "Reset your password",
@@ -125,7 +140,8 @@
       "backToLogin": "Back to login",
       "passwordMismatch": "Passwords do not match",
       "passwordTooShort": "Password must be at least 8 characters long",
-      "invalidToken": "Invalid or missing reset token"
+      "invalidToken": "Invalid or missing reset token",
+      "genericError": "An error occurred while resetting your password"
     }
   },
   "dashboard": {
@@ -142,23 +158,89 @@
     "status": "Status",
     "apiRequest": "API Request",
     "success": "Success",
-    "failed": "Failed"
+    "failed": "Failed",
+    "lastSync": "Last Sync",
+    "lastDay": "Last 24 hours"
   },
   "connections": {
+    "title": "API Connections",
+    "subtitle": "Manage your API connections and their configurations",
     "description": "Manage all your integrations",
     "addNew": "Add Connection",
     "searchPlaceholder": "Search connections...",
+    "refresh": "Refresh connections",
+    "addConnection": "Add Connection",
+    "loading": "Loading connections...",
+    "fetchError": "Failed to fetch connections",
+    "deleteError": "Failed to delete connection",
+    "updateError": "Failed to update connection",
+    "noConnections": "No connections found",
+    "addYourFirst": "Add your first API connection to get started",
+    "noSearchResults": "No connections match your search",
+    "tryDifferentSearch": "Try a different search term",
+    "connectedIntegrations": "Connected Integrations",
+    "availableIntegrations": "Available Integrations",
+    "allIntegrations": "All Integrations",
     "statusActive": "Active",
     "statusInactive": "Inactive",
     "statusPending": "Pending",
     "statusUnknown": "Unknown",
-    "lastSync": "Last Sync",
     "never": "Never",
     "configure": "Configure",
     "viewData": "View Data",
+    "activate": "Activate"
+  },
+  "connectionList": {
+    "noConnectionsTitle": "No connections yet",
+    "noConnectionsDescription": "Get started by creating your first API connection.",
+    "createNewConnection": "Create new connection",
+    "noConnections": "No connections found",
+    "view": "View Details",
+    "edit": "Edit",
+    "delete": "Delete",
     "activate": "Activate",
-    "noResults": "No connections found",
-    "tryDifferentSearch": "Try a different search term"
+    "deactivate": "Deactivate",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "created": "Created"
+  },
+  "connectionDetails": {
+    "loading": "Loading connection details...",
+    "loadError": "Failed to load connection details",
+    "backToList": "Back to connections",
+    "notFound": "Connection not found",
+    "edit": "Edit Connection",
+    "delete": "Delete Connection",
+    "type": "Type",
+    "id": "Connection ID",
+    "created": "Created",
+    "updated": "Updated",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "configuration": "Configuration",
+    "noConfig": "No configuration found for this connection",
+    "noDescription": "No description provided."
+  },
+  "connectionModal": {
+    "addConnection": "Add Connection",
+    "testConnection": "Test Connection",
+    "editConnection": "Edit Connection",
+    "nameLabel": "Connection Name",
+    "namePlaceholder": "My Shopify Store",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Optional description",
+    "typeLabel": "Connection Type",
+    "selectType": "Select a connection type",
+    "connectWithOAuth": "Connect with OAuth",
+    "oauthDescription": "You'll be redirected to authenticate with the service",
+    "oauthError": "Failed to initiate OAuth flow",
+    "saveConnection": "Save Connection",
+    "updateConnection": "Update Connection",
+    "missingRequiredFields": "Please fill in all required fields",
+    "loadError": "Failed to load connection details",
+    "updateError": "Failed to update connection",
+    "createError": "Failed to create connection",
+    "testError": "Failed to test connection"
   },
   "integrations": {
     "title": "API Integrations",
@@ -275,73 +357,7 @@
     "splitFirstTransform": "Split (Get First)",
     "dateFormatTransform": "Format Date",
     "conditionalTransform": "Conditional",
-    "incompatibleTypes": "Warning: These field types may not be compatible"
-  }, 
-  "connections": {
-    "title": "API Connections",
-    "subtitle": "Manage your API connections and their configurations",
-    "searchPlaceholder": "Search connections...",
-    "refresh": "Refresh connections",
-    "addConnection": "Add Connection",
-    "loading": "Loading connections...",
-    "fetchError": "Failed to fetch connections",
-    "deleteError": "Failed to delete connection",
-    "updateError": "Failed to update connection",
-    "noConnections": "No connections found",
-    "addYourFirst": "Add your first API connection to get started",
-    "noSearchResults": "No connections match your search",
-    "tryDifferentSearch": "Try a different search term",
-    "connectedIntegrations": "Connected Integrations",
-    "availableIntegrations": "Available Integrations",
-    "allIntegrations": "All Integrations"
-  },
-  "connectionList": {
-    "noConnectionsTitle": "No connections yet",
-    "noConnectionsDescription": "Get started by creating your first API connection.",
-    "createNewConnection": "Create new connection"
-    "noConnections": "No connections found",
-    "view": "View Details",
-    "edit": "Edit",
-    "delete": "Delete",
-    "activate": "Activate",
-    "deactivate": "Deactivate",
-    "statusActive": "Active",
-    "statusInactive": "Inactive",
-    "created": "Created"
-  },
-  "connectionDetails": {
-    "loading": "Loading connection details...",
-    "loadError": "Failed to load connection details",
-    "backToList": "Back to connections",
-    "notFound": "Connection not found",
-    "edit": "Edit Connection",
-    "delete": "Delete Connection",
-    "type": "Type",
-    "id": "Connection ID",
-    "created": "Created",
-    "updated": "Updated",
-    "statusActive": "Active",
-    "statusInactive": "Inactive",
-    "configuration": "Configuration",
-    "noConfig": "No configuration found for this connection"
-  },
-  "connectionModal": {
-    "addConnection": "Add Connection",
-    "testConnection": "Test Connection",
-    "editConnection": "Edit Connection",
-    "nameLabel": "Connection Name",
-    "namePlaceholder": "My Shopify Store",
-    "descriptionLabel": "Description",
-    "descriptionPlaceholder": "Optional description",
-    "typeLabel": "Connection Type",
-    "selectType": "Select a connection type",
-    "connectWithOAuth": "Connect with OAuth",
-    "oauthDescription": "You'll be redirected to authenticate with the service",
-    "saveConnection": "Save Connection",
-    "updateConnection": "Update Connection",
-    "missingRequiredFields": "Please fill in all required fields",
-    "loadError": "Failed to load connection details",
-    "updateError": "Failed to update connection",
-    "createError": "Failed to create connection"
+    "incompatibleTypes": "Warning: These field types may not be compatible",
+    "endpoint": "Endpoint"
   }
 }

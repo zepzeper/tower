@@ -7,12 +7,12 @@ import { authService } from '../../services/authService';
 import { Zap } from 'lucide-react';
 
 const ForgotPassword = () => {
+  const { t } = useTranslation('pages');
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { theme } = useTheme();
-  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

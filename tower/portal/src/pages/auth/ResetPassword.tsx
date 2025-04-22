@@ -7,6 +7,7 @@ import { authService } from '../../services/authService';
 import { Zap } from 'lucide-react';
 
 const ResetPassword: React.FC = () => {
+  const { t } = useTranslation('pages');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [token, setToken] = useState<string>('');
@@ -15,7 +16,6 @@ const ResetPassword: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const location = useLocation();
   const { theme } = useTheme();
-  const { t } = useTranslation();
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);

@@ -36,7 +36,7 @@ interface Theme {
 }
 
 const ConnectionDetails: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('pages');
   const { id } = useParams<{ id: string }>();
   const { theme } = useTheme() as Theme;
   const navigate = useNavigate();
@@ -52,9 +52,6 @@ const ConnectionDetails: React.FC = () => {
   const [connectionType, setConnectionType] = useState<ConnectionType | null>(null);
   const [saving, setSaving] = useState<boolean>(false);
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
-
-  // We'll keep these here but they'll be used by child components
-  const [relationConnections, setRelationConnections] = useState<any[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -155,6 +152,7 @@ const ConnectionDetails: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="animate-spin h-10 w-10 text-green-500" />
+        <span className="ml-2">{t('connectionDetails.loading')}</span>
       </div>
     );
   }
@@ -163,13 +161,13 @@ const ConnectionDetails: React.FC = () => {
     return (
       <div className="p-6">
         <div className={`p-6 mx-auto max-w-4xl rounded-lg border ${theme === 'dark' ? 'bg-red-900/30 border-red-800 text-red-300' : 'bg-red-50 border-red-200 text-red-600'}`}>
-          <h3 className="text-lg font-medium mb-2">Error</h3>
-          <p>{error || 'Connection not found.'}</p>
+          <h3 className="text-lg font-medium mb-2">{t('common.error')}</h3>
+          <p>{error || t('connectionDetails.notFound')}</p>
           <button
             onClick={() => navigate('/connections')}
             className="mt-4 px-4 py-2 rounded-md bg-gray-600 text-white hover:bg-gray-700"
           >
-            Back to Connections
+            {t('connectionDetails.backToList')}
           </button>
         </div>
       </div>
@@ -207,11 +205,11 @@ const ConnectionDetails: React.FC = () => {
                   ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                   : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                   }`}>
-                  {connection.active ? 'Active' : 'Inactive'}
+                  {connection.active ? t('connectionDetails.statusActive') : t('connectionDetails.statusInactive')}
                 </span>
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Type: {connection.type} • ID: {connection.id}
+                {t('connectionDetails.type')}: {connection.type} • {t('connectionDetails.id')}: {connection.id}
               </p>
             </div>
           </div>
@@ -222,10 +220,10 @@ const ConnectionDetails: React.FC = () => {
                 <button
                   onClick={handleUpdateConnection}
                   disabled={saving}
-                  className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 flex items-center"
+                  className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 flex items-center cursor-pointer"
                 >
                   {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                  Save Changes
+                  {t('common.save')}
                 </button>
                 <button
                   onClick={() => {
@@ -241,27 +239,27 @@ const ConnectionDetails: React.FC = () => {
                   className={`px-4 py-2 rounded-md ${theme === 'dark'
                     ? 'bg-gray-700 hover:bg-gray-600'
                     : 'bg-gray-200 hover:bg-gray-300'
-                    } text-gray-800 dark:text-white flex items-center`}
+                    } text-gray-800 dark:text-white flex items-center cursor-pointer`}
                 >
                   <X className="w-4 h-4 mr-2" />
-                  Cancel
+                  {t('common.cancel')}
                 </button>
               </>
             ) : (
               <>
                 <button
                   onClick={() => { handleTestConnection(connection.id) }}
-                  className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 flex items-center"
+                  className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 flex items-center cursor-pointer"
                 >
                   <TestTube2 className="w-4 h-4 mr-2" />
-                  Test Connection
+                  {t('connectionModal.testConnection')}
                 </button>
                 <button
                   onClick={() => setEditing(true)}
-                  className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 flex items-center"
+                  className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 flex items-center cursor-pointer"
                 >
                   <Edit className="w-4 h-4 mr-2" />
-                  Edit
+                  {t('connectionDetails.edit')}
                 </button>
               </>
             )}
@@ -284,7 +282,7 @@ const ConnectionDetails: React.FC = () => {
               }`}
           >
             <Settings className="w-4 h-4 inline mr-2" />
-            Details & Configuration
+            {t('connectionDetails.configuration')}
           </button>
           <button
             onClick={() => setActiveTab('relations')}
@@ -298,7 +296,7 @@ const ConnectionDetails: React.FC = () => {
               }`}
           >
             <ArrowRight className="w-4 h-4 inline mr-2" />
-            Relation Connections
+            {t('connections.connectedIntegrations')}
           </button>
           <button
             onClick={() => setActiveTab('activity')}
@@ -312,7 +310,7 @@ const ConnectionDetails: React.FC = () => {
               }`}
           >
             <Activity className="w-4 h-4 inline mr-2" />
-            Recent Activity
+            {t('dashboard.recentActivity')}
           </button>
         </div>
       </div>
