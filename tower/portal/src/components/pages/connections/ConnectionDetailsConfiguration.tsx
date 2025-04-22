@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { JSX, useState } from 'react';
 import {
   Trash2,
   Plus,
@@ -9,78 +9,56 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { ApiConnection, ApiConnectionConfig, ConnectionType } from '../../../services/connectionService';
 
-interface ConnectionDetailsConfigurationProps {
-  connection: ApiConnection;
-  configs: ApiConnectionConfig[];
-  connectionType: ConnectionType | null;
-  editing: boolean;
-  theme: string;
-  testResult: { success: boolean; message: string } | null;
-  setConnection: React.Dispatch<React.SetStateAction<ApiConnection | null>>;
-  setConfigs: React.Dispatch<React.SetStateAction<ApiConnectionConfig[]>>;
-  handleInitiateOAuth: () => Promise<void>;
-  formatDate: (dateString: string) => string;
-  toggleShowSecret: (key: string) => void;
-  showSecrets: Record<string, boolean>;
-}
+import { useTheme } from '../../../context/ThemeContext';
+import { getThemeStyles } from '../../../utility/theme';
+import { useConnection } from '../../../context/ConnectionContext';
+import { ApiConnectionConfig } from '../../../services/connectionService';
 
-const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationProps> = ({
-  connection,
-  configs,
-  connectionType,
-  editing,
-  theme,
-  testResult,
-  setConnection,
-  setConfigs,
-  handleInitiateOAuth,
-  formatDate,
-  toggleShowSecret,
-  showSecrets
-}) => {
+const ConnectionDetailsConfiguration: React.FC = () => {
   const { t } = useTranslation('pages');
+  const { theme } = useTheme();
+  const styles = getThemeStyles(theme);
+
+  const {
+    connection,
+    configs,
+    connectionType,
+    editing,
+    testResult,
+    showSecrets,
+    setConnection,
+    handleAddConfig,
+    handleRemoveConfig,
+    updateConfigValue,
+    handleInitiateOAuth,
+    toggleShowSecret,
+    formatDate
+  } = useConnection();
+
   const [newConfigKey, setNewConfigKey] = useState<string>('');
   const [newConfigValue, setNewConfigValue] = useState<string>('');
   const [newConfigIsSecret, setNewConfigIsSecret] = useState<boolean>(false);
 
-  const handleAddConfig = () => {
+  const handleAddNewConfig = (): void => {
     if (!newConfigKey.trim()) return;
 
-    const newConfig: ApiConnectionConfig = {
-      connection_id: connection?.id || '',
-      key: newConfigKey,
-      value: newConfigValue,
-      is_secret: newConfigIsSecret,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
+    handleAddConfig(newConfigKey, newConfigValue, newConfigIsSecret);
 
-    setConfigs([...configs, newConfig]);
+    // Reset form fields
     setNewConfigKey('');
     setNewConfigValue('');
     setNewConfigIsSecret(false);
   };
 
-  const handleRemoveConfig = (key: string) => {
-    setConfigs(configs.filter(c => c.key !== key));
-  };
-
-  const renderConfigValue = (config: ApiConnectionConfig) => {
-
+  const renderConfigValue = (config: ApiConnectionConfig): JSX.Element => {
     return (
       <div className="relative w-full">
         <input
           type={config.is_secret && !showSecrets[config.key] ? 'password' : 'text'}
           value={config.value || ''}
-          onChange={(e) => {
-            setConfigs(configs.map(c =>
-              c.key === config.key ? { ...c, value: e.target.value } : c
-            ));
-          }}
-          className={`w-full px-3 py-2 rounded-md border ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
-            } ${config.is_secret ? 'pr-10' : ''}`}
+          onChange={(e) => updateConfigValue(config.key, e.target.value)}
+          className={`w-full px-3 py-2 rounded-md border ${styles.input} ${config.is_secret ? 'pr-10' : ''}`}
           readOnly={!editing}
         />
         {config.is_secret && (
@@ -99,7 +77,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Connection Information */}
-      <div className={`col-span-1 rounded-lg shadow-sm ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} p-6`}>
+      <div className={`col-span-1 rounded-lg shadow-sm ${styles.card} p-6`}>
         <h2 className="text-lg font-medium mb-4">{t('connectionDetails.configuration', 'Connection Information')}</h2>
 
         {editing ? (
@@ -108,25 +86,19 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
               <label className="block text-sm font-medium mb-1">{t('connectionModal.nameLabel')}</label>
               <input
                 type="text"
-                value={connection.name}
-                onChange={(e) => setConnection({ ...connection, name: e.target.value })}
-                className={`w-full px-3 py-2 rounded-md border ${theme === 'dark'
-                  ? 'bg-gray-700 border-gray-600 text-white'
-                  : 'bg-white border-gray-300 text-gray-900'
-                  }`}
+                value={connection!.name}
+                onChange={(e) => setConnection({ ...connection!, name: e.target.value })}
+                className={`w-full px-3 py-2 rounded-md border ${styles.input}`}
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium mb-1">{t('connectionModal.descriptionLabel')}</label>
               <textarea
-                value={connection.description || ''}
-                onChange={(e) => setConnection({ ...connection, description: e.target.value })}
+                value={connection!.description || ''}
+                onChange={(e) => setConnection({ ...connection!, description: e.target.value })}
                 rows={4}
-                className={`w-full px-3 py-2 rounded-md border ${theme === 'dark'
-                  ? 'bg-gray-700 border-gray-600 text-white'
-                  : 'bg-white border-gray-300 text-gray-900'
-                  }`}
+                className={`w-full px-3 py-2 rounded-md border ${styles.input}`}
                 placeholder={t('connectionModal.descriptionPlaceholder')}
               />
             </div>
@@ -135,8 +107,8 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
               <input
                 type="checkbox"
                 id="active-toggle"
-                checked={connection.active}
-                onChange={(e) => setConnection({ ...connection, active: e.target.checked })}
+                checked={connection!.active}
+                onChange={(e) => setConnection({ ...connection!, active: e.target.checked })}
                 className="mr-2 h-4 w-4"
               />
               <label htmlFor="active-toggle" className="text-sm">{t('connectionList.statusActive')}</label>
@@ -146,22 +118,22 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
           <div className="space-y-4">
             <div>
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('connectionDetails.type')}</h3>
-              <p className="mt-1">{connection.type}</p>
+              <p className="mt-1">{connection!.type}</p>
             </div>
 
             <div>
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('connectionModal.descriptionLabel')}</h3>
-              <p className="mt-1">{connection.description || t('connectionDetails.noDescription', 'No description provided.')}</p>
+              <p className="mt-1">{connection!.description || t('connectionDetails.noDescription', 'No description provided.')}</p>
             </div>
 
             <div>
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('connectionDetails.created')}</h3>
-              <p className="mt-1">{formatDate(connection.created_at)}</p>
+              <p className="mt-1">{formatDate(connection!.created_at)}</p>
             </div>
 
             <div>
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('connectionDetails.updated')}</h3>
-              <p className="mt-1">{formatDate(connection.updated_at || connection.created_at)}</p>
+              <p className="mt-1">{formatDate(connection!.updated_at || connection!.created_at)}</p>
             </div>
           </div>
         )}
@@ -180,7 +152,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
       </div>
 
       {/* Configuration */}
-      <div className={`col-span-2 rounded-lg shadow-sm ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} p-6`}>
+      <div className={`col-span-2 rounded-lg shadow-sm ${styles.card} p-6`}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-medium">{t('connectionDetails.configuration')}</h2>
           {editing && (
@@ -188,10 +160,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
               onClick={() => {
                 document.getElementById('add-config-section')?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className={`px-3 py-1 rounded-md text-sm flex items-center ${theme === 'dark'
-                ? 'bg-gray-700 hover:bg-gray-600'
-                : 'bg-gray-100 hover:bg-gray-200'
-                }`}
+              className={`px-3 py-1 rounded-md text-sm flex items-center ${styles.secondaryButton}`}
             >
               <Plus className="w-4 h-4 mr-1" />
               {t('common.add', 'Add Config')}
@@ -217,7 +186,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
         ) : (
           <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className={theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'}>
+              <thead className={styles.tableHeader}>
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     {t('common.key', 'Key')}
@@ -235,9 +204,9 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
                   )}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className={`divide-y ${styles.tableDivider}`}>
                 {configs.map((config) => (
-                  <tr key={config.key} className={theme === 'dark' ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-gray-50'}>
+                  <tr key={config.key} className={styles.tableRow}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">
                       {config.key}
                     </td>
@@ -246,8 +215,8 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className={`px-2 py-1 rounded-full text-xs ${config.is_secret
-                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:bg-opacity-30 dark:text-red-300'
-                        : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:bg-opacity-30 dark:text-blue-300'
+                        ? theme === 'dark' ? 'bg-red-900 bg-opacity-30 text-red-300' : 'bg-red-100 text-red-800'
+                        : theme === 'dark' ? 'bg-blue-900 bg-opacity-30 text-blue-300' : 'bg-blue-100 text-blue-800'
                         }`}>
                         {config.is_secret ? t('common.secret', 'Secret') : t('common.plain', 'Plain')}
                       </span>
@@ -284,10 +253,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
                   type="text"
                   value={newConfigKey}
                   onChange={(e) => setNewConfigKey(e.target.value)}
-                  className={`w-full px-3 py-2 rounded-md border ${theme === 'dark'
-                    ? 'bg-gray-600 border-gray-500 text-white'
-                    : 'bg-white border-gray-300 text-gray-900'
-                    }`}
+                  className={`w-full px-3 py-2 rounded-md border ${styles.input}`}
                   placeholder="API_KEY"
                 />
               </div>
@@ -299,10 +265,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
                     type={newConfigIsSecret ? 'password' : 'text'}
                     value={newConfigValue}
                     onChange={(e) => setNewConfigValue(e.target.value)}
-                    className={`w-full px-3 py-2 rounded-md border ${theme === 'dark'
-                      ? 'bg-gray-600 border-gray-500 text-white'
-                      : 'bg-white border-gray-300 text-gray-900'
-                      } ${newConfigIsSecret ? 'pr-10' : ''}`}
+                    className={`w-full px-3 py-2 rounded-md border ${styles.input} ${newConfigIsSecret ? 'pr-10' : ''}`}
                     placeholder={t('common.value', 'Value')}
                   />
                   {newConfigIsSecret && (
@@ -331,13 +294,11 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
             </div>
 
             <button
-              onClick={handleAddConfig}
+              onClick={handleAddNewConfig}
               disabled={!newConfigKey.trim()}
               className={`mt-4 px-4 py-2 rounded-md text-sm font-medium ${!newConfigKey.trim()
                 ? 'bg-gray-400 cursor-not-allowed text-gray-200'
-                : theme === 'dark'
-                  ? 'bg-green-600 hover:bg-green-700 text-white'
-                  : 'bg-green-500 hover:bg-green-600 text-white'
+                : styles.primaryButton
                 }`}
             >
               {t('connections.addConnection', 'Add Configuration')}
@@ -347,14 +308,7 @@ const ConnectionDetailsConfiguration: React.FC<ConnectionDetailsConfigurationPro
 
         {/* Test Result */}
         {testResult && (
-          <div className={`mt-6 p-4 rounded-lg border ${testResult.success
-            ? theme === 'dark'
-              ? 'bg-green-900/30 border-green-800 text-green-300'
-              : 'bg-green-50 border-green-200 text-green-800'
-            : theme === 'dark'
-              ? 'bg-red-900/30 border-red-800 text-red-300'
-              : 'bg-red-50 border-red-200 text-red-800'
-            }`}>
+          <div className={`mt-6 p-4 rounded-lg border ${testResult.success ? styles.success : styles.error}`}>
             <div className="flex items-start">
               <div className={`p-2 rounded-full mr-3 ${testResult.success
                 ? 'bg-green-100 dark:bg-green-900'

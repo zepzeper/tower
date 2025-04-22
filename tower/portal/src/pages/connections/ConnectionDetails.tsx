@@ -1,14 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  connectionService,
-  ApiConnection,
-  ApiConnectionConfig,
-  ConnectionType,
-  ApiConnectionUpdateRequest,
-  RelationConnectionLogs
-} from '../../services/connectionService';
-import { useTheme } from '../../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import {
   Loader2,
@@ -26,127 +17,41 @@ import ConnectionDetailsConfiguration from '../../components/pages/connections/C
 import ConnectionRelations from '../../components/pages/connections/ConnectionRelations';
 import ConnectionActivity from '../../components/pages/connections/ConnectionActivity';
 
-interface TestResult {
-  success: boolean;
-  message: string;
-}
+import { useTheme } from '../../context/ThemeContext';
+import { getThemeStyles } from '../../utility/theme';
+import { ConnectionProvider, useConnection } from '../../context/ConnectionContext';
 
-interface Theme {
-  theme: string;
-}
-
+// The main component just sets up the context provider
 const ConnectionDetails: React.FC = () => {
-  const { t } = useTranslation('pages');
   const { id } = useParams<{ id: string }>();
-  const { theme } = useTheme() as Theme;
+
+  return (
+    <ConnectionProvider connectionId={id}>
+      <ConnectionDetailsContent />
+    </ConnectionProvider>
+  );
+};
+
+// The inner component consumes the context
+const ConnectionDetailsContent: React.FC = () => {
+  const { t } = useTranslation('pages');
+  const { theme } = useTheme();
   const navigate = useNavigate();
+  const styles = getThemeStyles(theme);
 
-  const [activeTab, setActiveTab] = useState<string>('details');
-  const [connection, setConnection] = useState<ApiConnection | null>(null);
-  const [configs, setConfigs] = useState<ApiConnectionConfig[]>([]);
-  const [connectionTypes, setConnectionTypes] = useState<ConnectionType[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [editing, setEditing] = useState<boolean>(false);
-  const [testResult, setTestResult] = useState<TestResult | null>(null);
-  const [connectionType, setConnectionType] = useState<ConnectionType | null>(null);
-  const [saving, setSaving] = useState<boolean>(false);
-  const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    if (!id) return;
-
-    const fetchDetails = async () => {
-      try {
-        setLoading(true);
-        const data = await connectionService.getApiConnectionWithConfig(id);
-        setConnection(data.connection);
-        setConfigs(data.configs);
-
-        // Load connection types to get the auth type
-        const types = await connectionService.getConnectionTypesFromFile();
-        setConnectionTypes(types);
-        const foundType = types.find(t => t.id === data.connection.type);
-        setConnectionType(foundType || null);
-      } catch (err) {
-        console.error(err);
-        setError('Failed to load connection details.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDetails();
-  }, [id]);
-
-  const handleUpdateConnection = async () => {
-    if (!connection) return;
-
-    try {
-      setSaving(true);
-      const updateData: ApiConnectionUpdateRequest = {
-        id: connection.id,
-        name: connection.name,
-        description: connection.description || undefined,
-        active: connection.active,
-        configs: configs.map(c => ({
-          key: c.key,
-          value: c.value || '',
-          is_secret: c.is_secret
-        }))
-      };
-
-      const updated = await connectionService.updateApiConnection(updateData);
-      setConnection(updated);
-      setEditing(false);
-      setTestResult(null);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to update connection.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleTestConnection = async (id: string) => {
-    if (!connection) return;
-
-    try {
-      setTestResult(null);
-      const result = await connectionService.testApiConnection(id);
-      setTestResult(result);
-    } catch (err) {
-      console.error(err);
-      setTestResult({
-        success: false,
-        message: 'Failed to test connection.'
-      });
-    }
-  };
-
-  const handleInitiateOAuth = async () => {
-    if (!connectionType) return;
-
-    try {
-      const { url } = await connectionService.initiateOAuthFlow(connectionType.id);
-      window.location.href = url;
-    } catch (err) {
-      console.error(err);
-      setError('Failed to initiate OAuth flow.');
-    }
-  };
-
-  const toggleShowSecret = (key: string) => {
-    setShowSecrets(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString();
-  };
+  const {
+    connection,
+    loading,
+    error,
+    editing,
+    saving,
+    activeTab,
+    setActiveTab,
+    setEditing,
+    setConnection,
+    handleUpdateConnection,
+    handleTestConnection
+  } = useConnection();
 
   if (loading) {
     return (
@@ -160,7 +65,7 @@ const ConnectionDetails: React.FC = () => {
   if (error || !connection) {
     return (
       <div className="p-6">
-        <div className={`p-6 mx-auto max-w-4xl rounded-lg border ${theme === 'dark' ? 'bg-red-900/30 border-red-800 text-red-300' : 'bg-red-50 border-red-200 text-red-600'}`}>
+        <div className={`p-6 mx-auto max-w-4xl rounded-lg border ${styles.error}`}>
           <h3 className="text-lg font-medium mb-2">{t('common.error')}</h3>
           <p>{error || t('connectionDetails.notFound')}</p>
           <button
@@ -175,9 +80,9 @@ const ConnectionDetails: React.FC = () => {
   }
 
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+    <div className={`min-h-screen ${styles.pageBackground}`}>
       {/* Header */}
-      <div className={`py-6 px-8 border-b ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} shadow-sm`}>
+      <div className={`py-6 px-8 border-b ${styles.card} ${styles.border} shadow-sm`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <button
@@ -193,18 +98,12 @@ const ConnectionDetails: React.FC = () => {
                     type="text"
                     value={connection.name}
                     onChange={(e) => setConnection({ ...connection, name: e.target.value })}
-                    className={`text-xl font-bold px-3 py-2 rounded-md border ${theme === 'dark'
-                      ? 'bg-gray-700 border-gray-600 text-white'
-                      : 'bg-white border-gray-300 text-gray-900'
-                      }`}
+                    className={`text-xl font-bold px-3 py-2 rounded-md border ${styles.input}`}
                   />
                 ) : (
                   <span>{connection.name}</span>
                 )}
-                <span className={`ml-3 text-sm px-2 py-0.5 rounded-full ${connection.active
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                  : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                  }`}>
+                <span className={`ml-3 text-sm px-2 py-0.5 rounded-full ${connection.active ? styles.active : styles.inactive}`}>
                   {connection.active ? t('connectionDetails.statusActive') : t('connectionDetails.statusInactive')}
                 </span>
               </h1>
@@ -220,26 +119,14 @@ const ConnectionDetails: React.FC = () => {
                 <button
                   onClick={handleUpdateConnection}
                   disabled={saving}
-                  className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 flex items-center cursor-pointer"
+                  className={`px-4 py-2 rounded-md ${styles.primaryButton} flex items-center cursor-pointer`}
                 >
                   {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
                   {t('common.save')}
                 </button>
                 <button
-                  onClick={() => {
-                    setEditing(false);
-                    // Reset to original values
-                    if (id) {
-                      connectionService.getApiConnectionWithConfig(id).then(data => {
-                        setConnection(data.connection);
-                        setConfigs(data.configs);
-                      });
-                    }
-                  }}
-                  className={`px-4 py-2 rounded-md ${theme === 'dark'
-                    ? 'bg-gray-700 hover:bg-gray-600'
-                    : 'bg-gray-200 hover:bg-gray-300'
-                    } text-gray-800 dark:text-white flex items-center cursor-pointer`}
+                  onClick={() => setEditing(false)}
+                  className={`px-4 py-2 rounded-md ${styles.secondaryButton} flex items-center cursor-pointer`}
                 >
                   <X className="w-4 h-4 mr-2" />
                   {t('common.cancel')}
@@ -248,7 +135,7 @@ const ConnectionDetails: React.FC = () => {
             ) : (
               <>
                 <button
-                  onClick={() => { handleTestConnection(connection.id) }}
+                  onClick={handleTestConnection}
                   className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 flex items-center cursor-pointer"
                 >
                   <TestTube2 className="w-4 h-4 mr-2" />
@@ -256,7 +143,7 @@ const ConnectionDetails: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setEditing(true)}
-                  className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 flex items-center cursor-pointer"
+                  className={`px-4 py-2 rounded-md ${styles.primaryButton} flex items-center cursor-pointer`}
                 >
                   <Edit className="w-4 h-4 mr-2" />
                   {t('connectionDetails.edit')}
@@ -268,46 +155,25 @@ const ConnectionDetails: React.FC = () => {
       </div>
 
       {/* Tabs Navigation */}
-      <div className={`border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+      <div className={`border-b ${styles.border}`}>
         <div className="flex px-8">
           <button
             onClick={() => setActiveTab('details')}
-            className={`py-4 px-6 font-medium text-sm border-b-2 ${activeTab === 'details'
-              ? theme === 'dark'
-                ? 'border-green-500 text-green-400'
-                : 'border-green-600 text-green-600'
-              : theme === 'dark'
-                ? 'border-transparent text-gray-400 hover:text-gray-300'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+            className={`py-4 px-6 font-medium text-sm border-b-2 ${activeTab === 'details' ? styles.tab.active : styles.tab.inactive}`}
           >
             <Settings className="w-4 h-4 inline mr-2" />
             {t('connectionDetails.configuration')}
           </button>
           <button
             onClick={() => setActiveTab('relations')}
-            className={`py-4 px-6 font-medium text-sm border-b-2 ${activeTab === 'relations'
-              ? theme === 'dark'
-                ? 'border-green-500 text-green-400'
-                : 'border-green-600 text-green-600'
-              : theme === 'dark'
-                ? 'border-transparent text-gray-400 hover:text-gray-300'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+            className={`py-4 px-6 font-medium text-sm border-b-2 ${activeTab === 'relations' ? styles.tab.active : styles.tab.inactive}`}
           >
             <ArrowRight className="w-4 h-4 inline mr-2" />
             {t('connections.connectedIntegrations')}
           </button>
           <button
             onClick={() => setActiveTab('activity')}
-            className={`py-4 px-6 font-medium text-sm border-b-2 ${activeTab === 'activity'
-              ? theme === 'dark'
-                ? 'border-green-500 text-green-400'
-                : 'border-green-600 text-green-600'
-              : theme === 'dark'
-                ? 'border-transparent text-gray-400 hover:text-gray-300'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+            className={`py-4 px-6 font-medium text-sm border-b-2 ${activeTab === 'activity' ? styles.tab.active : styles.tab.inactive}`}
           >
             <Activity className="w-4 h-4 inline mr-2" />
             {t('dashboard.recentActivity')}
@@ -318,40 +184,13 @@ const ConnectionDetails: React.FC = () => {
       {/* Main Content Area */}
       <div className="p-8">
         {/* Details & Configuration Tab */}
-        {activeTab === 'details' && (
-          <ConnectionDetailsConfiguration
-            connection={connection}
-            configs={configs}
-            connectionType={connectionType}
-            editing={editing}
-            theme={theme}
-            testResult={testResult}
-            setConnection={setConnection}
-            setConfigs={setConfigs}
-            handleInitiateOAuth={handleInitiateOAuth}
-            formatDate={formatDate}
-            toggleShowSecret={toggleShowSecret}
-            showSecrets={showSecrets}
-          />
-        )}
+        {activeTab === 'details' && <ConnectionDetailsConfiguration />}
 
         {/* Relations Tab */}
-        {activeTab === 'relations' && (
-          <ConnectionRelations
-            connectionId={connection.id}
-            theme={theme}
-            formatDate={formatDate}
-          />
-        )}
+        {activeTab === 'relations' && <ConnectionRelations />}
 
         {/* Activity Tab */}
-        {activeTab === 'activity' && (
-          <ConnectionActivity
-            connectionId={connection.id}
-            theme={theme}
-            formatDate={formatDate}
-          />
-        )}
+        {activeTab === 'activity' && <ConnectionActivity />}
       </div>
     </div>
   );

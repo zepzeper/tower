@@ -1,57 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Clock, Loader2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { connectionService, RelationConnectionLogs } from '../../../services/connectionService';
 
-interface ConnectionActivityProps {
-  connectionId: string;
-  theme: string;
-  formatDate: (dateString: string) => string;
-}
+import { useTheme } from '../../../context/ThemeContext';
+import { getThemeStyles } from '../../../utility/theme';
+import { useConnection } from '../../../context/ConnectionContext';
 
-const ConnectionActivity: React.FC<ConnectionActivityProps> = ({
-  connectionId,
-  theme,
-  formatDate
-}) => {
+const ConnectionActivity: React.FC = () => {
   const { t } = useTranslation('pages');
-  const [recentActivity, setRecentActivity] = useState<RelationConnectionLogs[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [selectedActivity, setSelectedActivity] = useState<RelationConnectionLogs | null>(null);
+  const { theme } = useTheme();
+  const styles = getThemeStyles(theme);
 
-  useEffect(() => {
-    handleLogs();
-  }, [connectionId]);
-
-  const handleLogsClick = (activity: RelationConnectionLogs) => {
-    setSelectedActivity(activity);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedActivity(null);
-  };
-
-  const handleLogs = async () => {
-    try {
-      setLoading(true);
-      const result = await connectionService.getRelationConnectionLogs(connectionId);
-      setRecentActivity(result);
-      setError(null);
-    } catch (err) {
-      console.error(err);
-      setError(t('connectionDetails.loadError', 'Failed to load activity logs'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    recentActivity,
+    activityLoading,
+    activityError,
+    selectedActivity,
+    isActivityModalOpen,
+    handleViewActivityDetails,
+    closeActivityModal,
+    formatDate
+  } = useConnection();
 
   return (
     <>
-      <div className={`rounded-lg shadow-sm ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} overflow-hidden`}>
+      <div className={`rounded-lg shadow-sm ${styles.card} overflow-hidden`}>
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <h2 className="text-lg font-medium">{t('dashboard.recentActivity')}</h2>
           <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
@@ -60,16 +33,16 @@ const ConnectionActivity: React.FC<ConnectionActivityProps> = ({
           </div>
         </div>
 
-        {loading ? (
+        {activityLoading ? (
           <div className="p-8 text-center">
             <Loader2 className="animate-spin h-8 w-8 mx-auto text-green-500 mb-2" />
             <p className="text-gray-500 dark:text-gray-400">{t('connections.loading', 'Loading activity logs...')}</p>
           </div>
-        ) : error ? (
-          <div className={`p-6 m-4 rounded-lg border ${theme === 'dark' ? 'bg-red-900/30 border-red-800 text-red-300' : 'bg-red-50 border-red-200 text-red-600'}`}>
-            <p>{error}</p>
+        ) : activityError ? (
+          <div className={`p-6 m-4 rounded-lg border ${styles.error}`}>
+            <p>{activityError}</p>
             <button
-              onClick={handleLogs}
+              onClick={() => {/* Refresh activity logs */ }}
               className="mt-2 px-3 py-1 rounded-md bg-gray-600 text-white hover:bg-gray-700 text-sm"
             >
               {t('common.retry', 'Retry')}
@@ -82,7 +55,7 @@ const ConnectionActivity: React.FC<ConnectionActivityProps> = ({
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className={theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'}>
+              <thead className={styles.tableHeader}>
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     {t('mappings.type', 'Type')}
@@ -101,20 +74,20 @@ const ConnectionActivity: React.FC<ConnectionActivityProps> = ({
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className={`divide-y ${styles.tableDivider}`}>
                 {recentActivity.map((activity) => (
                   <tr
-                    onClick={() => handleLogsClick(activity)}
+                    onClick={() => handleViewActivityDetails(activity)}
                     key={activity.id || `${activity.initiator_id}-${activity.created_at}`}
-                    className={`${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-gray-50'} cursor-pointer`}
+                    className={`${styles.tableRow} cursor-pointer`}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <span className={`px-2 py-1 rounded-full text-xs ${activity.connection_type === 'inbound'
-                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:bg-opacity-30 dark:text-blue-300'
+                          ? styles.inbound
                           : activity.connection_type === 'outbound'
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:bg-opacity-30 dark:text-green-300'
-                            : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:bg-opacity-30 dark:text-purple-300'
+                            ? styles.outbound
+                            : styles.bidirectional
                           }`}>
                           {activity.connection_type}
                         </span>
@@ -147,12 +120,12 @@ const ConnectionActivity: React.FC<ConnectionActivityProps> = ({
       </div>
 
       {/* Activity Detail Modal */}
-      {isModalOpen && selectedActivity && (
+      {isActivityModalOpen && selectedActivity && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm bg-opacity-30">
-          <div className={`rounded-lg shadow-xl ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} w-full max-w-3xl max-h-[90vh] overflow-hidden`}>
+          <div className={`rounded-lg shadow-xl ${styles.card} w-full max-w-3xl max-h-[90vh] overflow-hidden`}>
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
               <h2 className="text-lg font-medium">{t('connectionDetails.activityDetail', 'Activity Detail')}</h2>
-              <button onClick={closeModal} className="text-gray-500 cursor-pointer hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+              <button onClick={closeActivityModal} className="text-gray-500 cursor-pointer hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -164,10 +137,10 @@ const ConnectionActivity: React.FC<ConnectionActivityProps> = ({
                     <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('mappings.type', 'Type')}</h3>
                     <div className="mt-1">
                       <span className={`px-2 py-1 rounded-full text-xs ${selectedActivity.connection_type === 'inbound'
-                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:bg-opacity-30 dark:text-blue-300'
+                        ? styles.inbound
                         : selectedActivity.connection_type === 'outbound'
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:bg-opacity-30 dark:text-green-300'
-                          : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:bg-opacity-30 dark:text-purple-300'
+                          ? styles.outbound
+                          : styles.bidirectional
                         }`}>
                         {selectedActivity.connection_type}
                       </span>
@@ -208,11 +181,8 @@ const ConnectionActivity: React.FC<ConnectionActivityProps> = ({
 
             <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
               <button
-                onClick={closeModal}
-                className={`px-4 py-2 rounded-md text-sm font-medium cursor-pointer ${theme === 'dark'
-                  ? 'bg-gray-700 text-white hover:bg-gray-600'
-                  : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                  }`}
+                onClick={closeActivityModal}
+                className={`px-4 py-2 rounded-md text-sm font-medium cursor-pointer ${styles.secondaryButton}`}
               >
                 {t('common.close', 'Close')}
               </button>

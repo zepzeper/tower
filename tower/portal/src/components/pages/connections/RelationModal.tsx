@@ -1,92 +1,89 @@
 import React, { useState, useEffect } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { connectionService, ApiConnection, RelationConnection } from '../../../services/connectionService';
 
-interface AddRelationModalProps {
-  connectionId: string;
+import { useTheme } from '../../../context/ThemeContext';
+import { getThemeStyles } from '../../../utility/theme';
+import { connectionService, RelationConnection } from '../../../services/connectionService';
+
+interface RelationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (relationData: Omit<RelationConnection, 'id'>) => Promise<void>;
-  theme: string;
+  onAdd: (relationData: RelationConnection) => Promise<void>;
 }
 
-const AddRelationModal: React.FC<AddRelationModalProps> = ({
-  connectionId,
+const RelationModal: React.FC<RelationModalProps> = ({
   isOpen,
   onClose,
-  onAdd,
-  theme
+  onAdd
 }) => {
   const { t } = useTranslation('pages');
-  const [activeConnections, setActiveConnections] = useState<ApiConnection[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState<boolean>(false);
+  const { theme } = useTheme();
+  const styles = getThemeStyles(theme);
 
-  // Form state
-  const [selectedConnection, setSelectedConnection] = useState<string>('');
-  const [relationType, setRelationType] = useState<string>('outbound');
+  const [targetId, setTargetId] = useState<string>('');
+  const [connectionType, setConnectionType] = useState<string>('outbound');
   const [endpoint, setEndpoint] = useState<string>('');
+  const [active, setActive] = useState<boolean>(true);
+  const [availableConnections, setAvailableConnections] = useState<{ id: string; name: string }[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
-      fetchActiveConnections();
+      loadConnections();
+      resetForm();
     }
   }, [isOpen]);
 
-  const fetchActiveConnections = async () => {
+  const loadConnections = async (): Promise<void> => {
     try {
       setLoading(true);
       const connections = await connectionService.getApiConnections();
-      // Filter to only active connections and exclude the current connection
-      const filteredConnections = connections.filter(
-        conn => conn.active && conn.id !== connectionId
-      );
-      setActiveConnections(filteredConnections);
-      setError(null);
+      setAvailableConnections(connections.map(conn => ({
+        id: conn.id,
+        name: conn.name
+      })));
+      setLoading(false);
     } catch (err) {
-      console.error('Failed to fetch active connections:', err);
-      setError(t('connections.fetchError', 'Failed to load active connections'));
-      setActiveConnections([]);
-    } finally {
+      console.error('Failed to load available connections:', err);
+      setError('Failed to load available connections');
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const resetForm = (): void => {
+    setTargetId('');
+    setConnectionType('outbound');
+    setEndpoint('');
+    setActive(true);
+    setError(null);
+  };
 
-    if (!selectedConnection) {
-      setError(t('connectionModal.missingRequiredFields', 'Please select a connection'));
+  const handleSubmit = async (): Promise<void> => {
+    if (!targetId || !connectionType) {
+      setError('Please select a target connection and connection type');
       return;
     }
 
     try {
       setSubmitting(true);
+      setError(null);
 
-      // Get the name of the selected connection for display purposes
-      const selectedConnectionObj = activeConnections.find(conn => conn.id === selectedConnection);
-
-      const relationData = {
-        initiator_id: connectionId,
-        target_id: selectedConnection,
-        type: relationType,
+      const relationData: RelationConnection = {
+        initiator_id: targetId,
+        connection_type: connectionType,
         endpoint: endpoint,
-        active: true
+        active: active,
+        target_id: '' // This would typically be set by the server or from the context
       };
 
       await onAdd(relationData);
       onClose();
-
-      // Reset form
-      setSelectedConnection('');
-      setRelationType('outbound');
-      setEndpoint('products');
-      setError(null);
     } catch (err) {
-      console.error('Error adding relation:', err);
-      setError(t('connections.updateError', 'Failed to add relation connection'));
+      console.error('Failed to add relation:', err);
+      setError('Failed to add relation connection');
     } finally {
       setSubmitting(false);
     }
@@ -95,120 +92,116 @@ const AddRelationModal: React.FC<AddRelationModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm bg-opacity-30">
-      <div className={`relative w-full max-w-md p-6 rounded-lg shadow-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-        >
-          <X size={20} />
-        </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm bg-black bg-opacity-50">
+      <div className={`rounded-lg shadow-xl ${styles.card} w-full max-w-md overflow-hidden`}>
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <h2 className="text-lg font-medium">{t('connections.addRelation', 'Add Relation Connection')}</h2>
+          <button onClick={onClose} className="text-gray-500 cursor-pointer hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-        <h2 className="text-xl font-semibold mb-4">{t('connections.addConnection', 'Add New Relation')}</h2>
-
-        {error && (
-          <div className={`p-3 mb-4 rounded-md ${theme === 'dark' ? 'bg-red-900/30 border border-red-800 text-red-300' : 'bg-red-50 border border-red-200 text-red-600'}`}>
-            {error}
-          </div>
-        )}
-
-        {loading ? (
-          <div className="p-8 text-center">
-            <Loader2 className="animate-spin h-8 w-8 mx-auto text-green-500 mb-2" />
-            <p className="text-gray-500 dark:text-gray-400">{t('connections.loading', 'Loading connections...')}</p>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-1">
-                {t('common.target', 'Target Connection')}
-              </label>
-              {activeConnections.length === 0 ? (
-                <div className="p-3 rounded-md bg-yellow-50 border border-yellow-200 text-yellow-700 dark:bg-yellow-900/30 dark:border-yellow-800 dark:text-yellow-300">
-                  {t('connections.noConnections', 'No active connections available to link. Please create and activate other connections first.')}
+        <div className="p-6">
+          {loading ? (
+            <div className="text-center py-4">
+              <Loader2 className="animate-spin h-8 w-8 mx-auto text-green-500 mb-2" />
+              <p className="text-gray-500 dark:text-gray-400">{t('connections.loading', 'Loading available connections...')}</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {error && (
+                <div className={`p-3 rounded-md ${styles.error}`}>
+                  <p className="text-sm">{error}</p>
                 </div>
-              ) : (
+              )}
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('connections.selectTarget', 'Select Target Connection')}
+                </label>
                 <select
-                  value={selectedConnection}
-                  onChange={(e) => setSelectedConnection(e.target.value)}
-                  className={`w-full px-3 py-2 rounded-md border ${theme === 'dark'
-                    ? 'bg-gray-700 border-gray-600 text-white'
-                    : 'bg-white border-gray-300'}`}
-                  required
+                  value={targetId}
+                  onChange={(e) => setTargetId(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-md border ${styles.input}`}
                 >
-                  <option value="">{t('connectionModal.selectType', 'Select a connection')}</option>
-                  {activeConnections.map((conn) => (
+                  <option value="">{t('common.selectPlaceholder', 'Select...')}</option>
+                  {availableConnections.map(conn => (
                     <option key={conn.id} value={conn.id}>
-                      {conn.name} ({conn.type})
+                      {conn.name} ({conn.id})
                     </option>
                   ))}
                 </select>
-              )}
-            </div>
+              </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-1">
-                {t('mappings.type', 'Relation Type')}
-              </label>
-              <select
-                value={relationType}
-                onChange={(e) => setRelationType(e.target.value)}
-                className={`w-full px-3 py-2 rounded-md border ${theme === 'dark'
-                  ? 'bg-gray-700 border-gray-600 text-white'
-                  : 'bg-white border-gray-300'}`}
-                required
-              >
-                <option value="outbound">Outbound</option>
-                <option value="inbound">Inbound</option>
-                <option value="bidirectional">Bidirectional</option>
-              </select>
-            </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('mappings.type', 'Connection Type')}
+                </label>
+                <select
+                  value={connectionType}
+                  onChange={(e) => setConnectionType(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-md border ${styles.input}`}
+                >
+                  <option value="outbound">{t('mappings.outbound', 'Outbound')}</option>
+                  <option value="inbound">{t('mappings.inbound', 'Inbound')}</option>
+                  <option value="bidirectional">{t('mappings.bidirectional', 'Bidirectional')}</option>
+                </select>
+              </div>
 
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-1">
-                {t('mappings.endpoint', 'Endpoint Path')}
-              </label>
-              <select
-                value={endpoint}
-                onChange={(e) => setEndpoint(e.target.value)}
-                className={`w-full px-3 py-2 rounded-md border ${theme === 'dark'
-                  ? 'bg-gray-700 border-gray-600 text-white'
-                  : 'bg-white border-gray-300'}`}
-                required
-              >
-                <option value="products">Products</option>
-                <option value="orders">Orders</option>
-                <option value="inventory">Inventory</option>
-              </select>
-            </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('mappings.endpoint', 'Endpoint')} ({t('common.optional', 'Optional')})
+                </label>
+                <input
+                  type="text"
+                  value={endpoint}
+                  onChange={(e) => setEndpoint(e.target.value)}
+                  placeholder="/api/webhook"
+                  className={`w-full px-3 py-2 rounded-md border ${styles.input}`}
+                />
+              </div>
 
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={onClose}
-                className={`px-4 py-2 rounded-md ${theme === 'dark'
-                  ? 'bg-gray-700 hover:bg-gray-600 text-white'
-                  : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                type="submit"
-                disabled={submitting || activeConnections.length === 0}
-                className={`px-4 py-2 rounded-md flex items-center ${theme === 'dark'
-                  ? 'bg-green-600 hover:bg-green-700 text-white'
-                  : 'bg-green-500 hover:bg-green-600 text-white'} ${(submitting || activeConnections.length === 0) ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-              >
-                {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {t('connections.addConnection', 'Add Relation')}
-              </button>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="active-toggle"
+                  checked={active}
+                  onChange={(e) => setActive(e.target.checked)}
+                  className="mr-2 h-4 w-4"
+                />
+                <label htmlFor="active-toggle" className="text-sm">
+                  {t('connectionList.statusActive', 'Active')}
+                </label>
+              </div>
             </div>
-          </form>
-        )}
+          )}
+        </div>
+
+        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-2">
+          <button
+            onClick={onClose}
+            className={`px-4 py-2 rounded-md text-sm font-medium cursor-pointer ${styles.secondaryButton}`}
+          >
+            {t('common.cancel', 'Cancel')}
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting || loading}
+            className={`px-4 py-2 rounded-md text-sm font-medium cursor-pointer ${styles.primaryButton}`}
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 inline animate-spin" />
+                {t('common.adding', 'Adding...')}
+              </>
+            ) : (
+              t('common.add', 'Add')
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-export default AddRelationModal;
+export default RelationModal;
