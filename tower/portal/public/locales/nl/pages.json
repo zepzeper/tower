@@ -49,7 +49,7 @@
     "notifications": "Meldingen"
   },
   "sidebar": {
-    "logo": "Tower",
+    "logo": "HookTen",
     "admin": "Beheerder",
     "adminEmail": "admin@example.com"
   },
@@ -244,7 +244,7 @@
   },
   "integrations": {
     "title": "API Integraties",
-    "subtitle": "Verbind TowerAPI met je favoriete tools en services",
+    "subtitle": "Verbind HookTen met je favoriete tools en services",
     "searchPlaceholder": "🔍 Zoek integraties...",
     "noResults": "Geen resultaten gevonden",
     "tryDifferentSearch": "Probeer een andere zoekterm of categorie",

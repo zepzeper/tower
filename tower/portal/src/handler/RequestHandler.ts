@@ -1,4 +1,5 @@
 import CacheManager from '../services/cacheService';
+const apiUrl = import.meta.env.VITE_API_URL || '/api';
 
 export interface ApiResponse<T> {
   data: T;
@@ -10,7 +11,7 @@ class RequestHandler {
   protected cacheManager: CacheManager;
 
   constructor(cacheManager: CacheManager) {
-    this.baseUrl = '/api';
+    this.baseUrl = apiUrl;
     this.cacheManager = cacheManager;
   }
 

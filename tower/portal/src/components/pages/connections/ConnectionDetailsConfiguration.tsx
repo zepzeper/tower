@@ -14,6 +14,7 @@ import { useTheme } from '../../../context/ThemeContext';
 import { getThemeStyles } from '../../../utility/theme';
 import { useConnection } from '../../../context/ConnectionContext';
 import { ApiConnectionConfig } from '../../../services/connectionService';
+import { Checkbox } from '../../../utility/components/FormComponents';
 
 const ConnectionDetailsConfiguration: React.FC = () => {
   const { t } = useTranslation('pages');
@@ -104,14 +105,13 @@ const ConnectionDetailsConfiguration: React.FC = () => {
             </div>
 
             <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="active-toggle"
+              <Checkbox
+                label={t('connectionList.statusActive')}
                 checked={connection!.active}
-                onChange={(e) => setConnection({ ...connection!, active: e.target.checked })}
+                onChange={(e) => setConnection({ ...connection!, active: e })}
                 className="mr-2 h-4 w-4"
+                id="active-toggle"
               />
-              <label htmlFor="active-toggle" className="text-sm">{t('connectionList.statusActive')}</label>
             </div>
           </div>
         ) : (

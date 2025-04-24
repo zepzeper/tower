@@ -49,7 +49,7 @@
     "notifications": "Notifications"
   },
   "sidebar": {
-    "logo": "Tower",
+    "logo": "HookTen",
     "admin": "Admin",
     "adminEmail": "admin@example.com"
   },
@@ -244,7 +244,7 @@
   },
   "integrations": {
     "title": "API Integrations",
-    "subtitle": "Connect TowerAPI with your favorite tools and services",
+    "subtitle": "Connect HookTen with your favorite tools and services",
     "searchPlaceholder": "🔍 Search integrations...",
     "noResults": "No results found",
     "tryDifferentSearch": "Try a different search term or category",

@@ -35,11 +35,10 @@ const MappingHeader: React.FC<MappingHeaderProps> = ({
       <div className="mt-4 sm:mt-0 flex gap-2">
         <button
           onClick={onTest}
-          className={`inline-flex items-center px-4 py-2 border rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-            isDarkMode
+          className={`inline-flex items-center px-4 py-2 border rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isDarkMode
               ? 'border-gray-600 bg-gray-700 text-white hover:bg-gray-600'
               : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-          }`}
+            }`}
         >
           <Eye size={16} className="mr-2" />
           {t('mappings.testMappings')}
@@ -47,11 +46,10 @@ const MappingHeader: React.FC<MappingHeaderProps> = ({
 
         <button
           onClick={onExport}
-          className={`inline-flex items-center px-4 py-2 border rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-            isDarkMode
+          className={`inline-flex items-center px-4 py-2 border rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isDarkMode
               ? 'border-gray-600 bg-gray-700 text-white hover:bg-gray-600'
               : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-          }`}
+            }`}
         >
           <Download size={16} className="mr-2" />
           {t('mappings.exportMappings')}
